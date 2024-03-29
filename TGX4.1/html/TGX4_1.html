@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>TGX4 - Teensy Guitar Amp project</title>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik">
+	<link rel="stylesheet" href="style.css">
+	<script src="bundle.js"></script>
+	<script src="term.js"></script>
+
+</head>
+
+<body>
+	<div class="terminal-settings">
+		Serial port speed:
+		<select name="speed" id="SerialSpeed">
+			<option value="115200">115200</option>
+			<option value="1200">1200</option>
+			<option value="2400">2400</option>
+			<option value="4800">4800</option>
+			<option value="9600">9600</option>
+			<option value="19200">19200</option>
+			<option value="38400">38400</option>
+			<option value="57600">57600</option>
+			<option value="115200">115200</option>
+		</select>
+		<button id="SerialConnectButton" type="button" disabled>Connect</button>
+		Powered by <a href="https://github.com/benc-uk/touchmidi" target="_blank">TouchMIDI</a> and <a
+			href="https://github.com/rafaelaroca/web-serial-terminal" target="_blank">web-serial-terminal</a>. 
+			<strong>TGX4 - Teensy 4.1 Guitar Amp Project  </strong>
+			<a href="https://www.hexefx.com" target="_blank">www.hexefx.com</a> Version: 1.3
+	</div>
+	<div class="layout">
+		<!-- AMP TAB -->
+		<input name="nav" type="radio" class="nav amp-radio" id="amp" checked="checked" />
+		<div class="page amp-page">
+			<div class="page-contents">
+				<div class="controls">
+					<group-row>
+						<midi-button  note="24" colour="#C4DE72" label="Comp" label-scale="0.8"></midi-button>
+						<midi-encoder label="PreGain\n%p" chan="1" cc="40" colour="#C4DE72" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Thres\n%p" chan="1" cc="41" colour="#C4DE72" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Ratio\n%p" chan="1" cc="42" colour="#C4DE72" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Attack\n%p" chan="1" cc="43" colour="#C4DE72" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Release\n%p" chan="1" cc="44" colour="#C4DE72" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="PostGain\n%p" chan="1" cc="45" colour="#C4DE72" label-scale="0.8"></midi-encoder>
+
+						<midi-encoder label="Drive\n%p" chan="1" cc="21" colour="#DE728E" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Bottom\n%p" chan="1" cc="22" colour="#DE728E" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Presence\n%p" chan="1" cc="23" colour="#DE728E" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Mix\n%p" chan="1" cc="24" colour="#DE728E" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Level\n%p" chan="1" cc="25" colour="#DE728E" label-scale="0.8"></midi-encoder>
+						<midi-button  note="30" colour="#DE728E" label="Octave" label-scale="0.8"></midi-button>
+						<midi-button  note="27" colour="#DE728E" label="Boost" label-scale="0.8"></midi-button>
+					</group-row>
+					<group-row>
+						<p>Amp Model</p>
+						<midi-button note="1" colour="#6092e0" label="OFF" label-scale="0.6"></midi-button> <!-- Bypass -->
+						<midi-button note="2" colour="#6092e0" label="Clean1" label-scale="0.6"></midi-button> <!-- Fender -->
+						<midi-button note="3" colour="#6092e0" label="Clean2" label-scale="0.6"></midi-button>	<!-- HKcln -->
+						<midi-button note="4" colour="#6092e0" label="Clean3" label-scale="0.6"></midi-button>	<!-- Matchless -->
+						<midi-button note="5" colour="#6092e0" label="Clean4" label-scale="0.6"></midi-button> <!-- Bassman -->
+						<midi-button note="6" colour="#6092e0" label="Crunch1" label-scale="0.6"></midi-button>	<!-- Klon -->
+						<midi-button note="7" colour="#6092e0" label="Crunch2" label-scale="0.6"></midi-button>	<!-- 5150 -->
+						<midi-button note="8" colour="#6092e0" label="Lead1" label-scale="0.6"></midi-button> <!-- MesaIIC -->
+						<midi-button note="9" colour="#6092e0" label="Lead2" label-scale="0.6"></midi-button> <!-- Lead -->
+					</group-row>
+					<group-row>
+						<midi-button  note="21" colour="#6092e0" label="Doubler" label-scale="0.8"></midi-button>
+						<midi-encoder label="Gate\n%p" chan="1" cc="20" colour="#B3E5FC" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Gain\n%p" chan="1" cc="30" colour="#B3E5FC" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Bass\n%p" chan="1" cc="31" colour="#B3E5FC" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Mid\n%p" chan="1" cc="32" colour="#B3E5FC" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Treble\n%p" chan="1" cc="33" colour="#B3E5FC" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="FX Mix\n%p" chan="1" cc="34" colour="#A494E4" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Dly/Rvb\nMix\n%p" chan="1" cc="91" colour="#A494E4" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Master\nVol\n%p" chan="1" cc="90" colour="#94E4CC" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Pan\n%p" chan="1" cc="92" colour="#94E4CC" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Master\nLowCut\n%p" chan="1" cc="93" colour="#94E4CC" label-scale="0.8"></midi-encoder>
+					</group-row>
+					<group-row>
+						<p>Cabinet IR</p>
+						<midi-button note="10" colour="#33ff55" label="G1"></midi-button>
+						<midi-button note="11" colour="#33ff55" label="G2"></midi-button>
+						<midi-button note="12" colour="#33ff55" label="G3"></midi-button>
+						<midi-button note="13" colour="#33ff55" label="G4"></midi-button>
+						<midi-button note="14" colour="#33ff55" label="G5"></midi-button>
+						<midi-button note="15" colour="#33ff55" label="G6"></midi-button>
+						<midi-button note="16" colour="#33ff55" label="G7"></midi-button>
+						<midi-button note="17" colour="#33ff55" label="B1"></midi-button>
+						<midi-button note="18" colour="#33ff55" label="B2"></midi-button>
+						<midi-button note="19" colour="#33ff55" label="B3"></midi-button>
+						<midi-button note="20" colour="#33ff55" label="OFF"></midi-button>
+				</group-row>
+				<group-row margin="1">
+					<midi-spacer></midi-spacer>
+					<midi-button note="80" colour="#DB6DDF" label="LR"></midi-button>
+					<midi-button note="81" colour="#DB6DDF" label="L"></midi-button>
+					<midi-button note="82" colour="#DB6DDF" label="R"></midi-button>
+					<midi-spacer></midi-spacer>
+					<midi-button note="33" colour="#B3E5FC" label="Delay" label-scale="0.8"></midi-button>
+					<midi-spacer></midi-spacer>
+					<midi-button note="37" colour="#B3E5FC" label="Delay Freeze" label-scale="0.8"></midi-button>
+					<midi-spacer></midi-spacer>
+					<midi-button note="36" colour="#B3E5FC" label="Delay Tap" label-scale="0.8"></midi-button>
+					<midi-spacer></midi-spacer>
+					<midi-button note="40" colour="#B3E5FC" label="Reverb" label-scale="0.8"></midi-button>
+					<midi-spacer></midi-spacer>
+					<midi-button note="43" colour="#B3E5FC" label="Reverb Freeze" label-scale="0.8"></midi-button>
+					<midi-spacer></midi-spacer>
+				</group-row>
+				</div>
+			</div>
+		</div>
+		<label class="nav" for="amp">Amp</label>
+		<!-- DELAY TAB -->
+		<input name="nav" type="radio" class="delay-radio" id="delay" />
+		<div class="page delay-page">
+			<div class="page-contents">
+				<div class="controls">
+					<group-row>
+						<midi-button note="33" colour="#B3E5FC" label="On/Off" label-scale="0.8"></midi-button>
+						<midi-encoder label="Time\n%p" chan="1" cc="1" colour="#B3E5FC" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Inertia\n%p" chan="1" cc="2" colour="#B3E5FC" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Repeats\n%p" chan="1" cc="3" colour="#B3E5FC" label-scale="0.8"></midi-encoder>	
+						<midi-encoder label="Mod\nRate\n%p" chan="1" cc="5" colour="#d082d9" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Mod\nDepth\n%p" chan="1" cc="6" colour="#d082d9" label-scale="0.8"></midi-encoder>
+						<midi-button note="36" colour="#B3E5FC" label="Tap" label-scale="0.8"></midi-button>
+					</group-row>
+					<group-row>
+						<midi-spacer></midi-spacer>
+						<midi-encoder label="HiCut\n%p" chan="1" cc="7" colour="#bad9b2" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="LowCut\n%p" chan="1" cc="8" colour="#bad9b2" label-scale="0.8"></midi-encoder>
+						<midi-button note="37" colour="#B3E5FC" label="Freeze" label-scale="0.8"></midi-button>
+						<midi-encoder label="Treble\n%p" chan="1" cc="9" colour="#bad9b2" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Bass\n%p" chan="1" cc="10" colour="#bad9b2" label-scale="0.8"></midi-encoder>		
+						<midi-spacer></midi-spacer>
+					</group-row>
+
+				</div>
+			</div>
+		</div>
+		<label class="nav" for="delay">Delay</label>
+		<!-- REVERB TAB -->
+		<input name="nav" type="radio" class="reverb-radio" id="reverb" />
+		<div class="page reverb-page">
+			<div class="page-contents">
+				<div class="controls">
+					<group-row>
+						<midi-button note="46" colour="#FFF9C4" label="Plate" label-scale="0.8"></midi-button>
+						<midi-encoder label="Size\n%p" chan="1" cc="50" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Diffusion\n%p" chan="1" cc="51" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="TrebleCut\n%p" chan="1" cc="54" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="BassCut\n%p" chan="1" cc="53" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Treble\n%p" chan="1" cc="56" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Time\n%p" chan="1" cc="80" colour="#9dede9" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="BassCut\n%p" chan="1" cc="82" colour="#9dede9" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="TrebleCut\n%p" chan="1" cc="83" colour="#9dede9" label-scale="0.8"></midi-encoder>	
+						<midi-button note="48" colour="#9dede9" label="Spring" label-scale="0.8"></midi-button>						
+					</group-row>
+					<group-row>
+						<midi-encoder label="BleedIn\n%p" chan="1" cc="57" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Pitch\n%p" chan="1" cc="58" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="PitchMix\n%p" chan="1" cc="59" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Shimmer\n%p" chan="1" cc="60" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="PitchShim\n%v" chan="1" cc="61" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Bass\n%p" chan="1" cc="55" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
+						<!--<midi-spacer></midi-spacer>-->
+						<group-column>
+
+							<midi-button note="40" colour="#B3E5FC" label="On/Off" label-scale="0.8"></midi-button>
+							<midi-button note="43" colour="#B3E5FC" label="Freeze" label-scale="0.8"></midi-button>
+						</group-column>
+						<midi-encoder label="Time\n%p" chan="1" cc="70" colour="#33ff55" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="Lowpass\nFreq\n%p" chan="1" cc="72" colour="#33ff55" label-scale="0.8"></midi-encoder>	
+						<midi-button note="47" colour="#33ff55" label="Reverb\nSC" label-scale="0.8"></midi-button>
+					</group-row>
+				</div>
+			</div>	
+		</div>
+		<label class="nav" for="reverb">Reverb</label>
+	</div>
+	<div class="controls control-block">
+		<group-row>
+			<midi-button note="50" colour="#CAF0CA" label="Preset1" label-scale="0.5"></midi-button> <!-- Bypass -->
+			<midi-button note="51" colour="#CAF0CA" label="Preset 2" label-scale="0.5"></midi-button> <!-- Fender -->
+			<midi-button note="52" colour="#CAF0CA" label="Preset 3" label-scale="0.5"></midi-button>	<!-- HKcln -->
+			<midi-button note="53" colour="#CAF0CA" label="Preset 4" label-scale="0.5"></midi-button>	<!-- Matchless -->
+			<midi-button note="54" colour="#CAF0CA" label="Preset 5" label-scale="0.5"></midi-button> <!-- Bassman -->
+			<midi-button note="55" colour="#CAF0CA" label="Preset 6" label-scale="0.5"></midi-button>	<!-- Klon -->
+			<midi-button note="56" colour="#CAF0CA" label="Preset 7" label-scale="0.5"></midi-button>	<!-- 5150 -->
+			<midi-button note="57" colour="#CAF0CA" label="Preset 8" label-scale="0.5"></midi-button> <!-- MesaIIC -->
+			<group-column>
+				<group-row>
+					<midi-button note="60" colour="#ff0000" label="Save"></midi-button>
+					<midi-button note="70" colour="#bdbf7c" label="Dry"></midi-button>
+					<midi-button note="71" colour="#bdbf7c" label="Wet"></midi-button>
+					<midi-button note="72" colour="#98DE72" label="Term"></midi-button>
+					<midi-button note="127" colour="#FF0000" label="RST"></midi-button>
+				</group-row>
+			</group-column>
+		</group-row>
+	</div>
+	<div class="term-wrapper">
+		<div id="term"></div>
+	</div>
+</body>
+<script>
+	var term;
+	function calculate_size(win) {
+		var cols = Math.max(80, Math.min(80, (win.innerWidth - 280) / 7)) | 0;
+		var rows = Math.max(8, Math.min(8, (win.innerHeight - 180) / 12)) | 0;
+		return [cols, rows];
+	}
+	(function () {
+		window.onload = function () {
+
+			var size = calculate_size(self);
+			term = new Terminal({
+				cols: 80,
+				rows: 8,
+				useStyle: false,
+				screenKeys: true,
+				cursorBlink: false
+			});
+			term.innerText
+			term.open(document.getElementById("term"));
+		};
+		window.addEventListener('resize', function () {
+			var size = calculate_size(self);
+			term.resize(size[0], size[1]);
+		});
+	}).call(this);
+	/*
+	* Web Serial API (Google Chrome)
+	*
+	* Useful information used to this implementation:
+	* https://github.com/svendahlstrand/web-serial-api/
+	* https://dev.to/unjavascripter/the-amazing-powers-of-the-web-web-serial-api-3ilc
+	*
+	*/
+	const connectButton = document.getElementById('SerialConnectButton');
+	let port;
+
+	if ('serial' in navigator) {
+		connectButton.addEventListener('click', function () {
+			if (port) {
+				term.write('\x1b[31mDisconnected from Serial Port\x1b[m\r\n');
+				port.close();
+				port = undefined;
+				connectButton.innerText = 'Connect';
+				document.getElementById('SerialSpeed').disabled = false;
+			}
+			else {
+				connectButton.innerText = 'Disconnect';
+				getReader();
+			}
+		});
+		connectButton.disabled = false;
+	}
+	else {
+		const error = document.createElement('p');
+		error.innerHTML = '<p>Support for Serial Web API not enabled. Please enable it using chrome://flags/ and enable Experimental Web Platform fetures</p>';
+	}
+	let lineBuffer = '';
+	let latestValue = 0;
+	async function serialWrite(data) {
+		encoder = new TextEncoder();
+		const dataArrayBuffer = encoder.encode(data);
+
+		if (port && port.writable) {
+			const writer = port.writable.getWriter();
+			writer.write(dataArrayBuffer);
+			writer.releaseLock();
+		}
+	}
+	async function getReader() {
+		port = await navigator.serial.requestPort({});
+		var e = document.getElementById("SerialSpeed");
+		var strSpd = e.options[e.selectedIndex].value;
+
+		var speed = parseInt(strSpd);
+		await port.open({ baudRate: [speed] });
+		document.getElementById('SerialSpeed').disabled = true;
+		connectButton.innerText = 'Disconnect';
+		const appendStream = new WritableStream({
+			write(chunk) {
+				term.write(chunk);
+			}
+		});
+		port.readable
+			.pipeThrough(new TextDecoderStream())
+			.pipeTo(appendStream);
+		term.on('data', function (data) {
+			serialWrite(data);
+		});
+	}
+</script>
+</html>
