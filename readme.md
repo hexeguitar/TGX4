@@ -1,12 +1,12 @@
 ## TGX4 - Teensy Guitar Amp Project
 
-This project aims at creating a nice usable set of guitar and bass tones while using relatively inexpensive hardware and beeing simple to build.  
-It combines a Neural Network amp modeler with stereo IR cabinet emulation, versatile stereo Ping-Pong delay and 3 different reverbs. There is also a Compressor and Booster with octave up mode for futher input tone shaping.  
+This project aims at creating a nice usable set of guitar and bass tones while using relatively inexpensive hardware and being simple to build.  
+It combines a Neural Network amp modeler with stereo IR cabinet emulation, versatile stereo Ping-Pong delay and 3 different reverbs. There is also a Compressor and Booster with octave up mode for further input tone shaping.  
 
-### Changelog  
+### Change-log  
 03.2024 - Initial release.  
 
-### User Interace  
+### User Interface  
 In general all the parameters are controlled via MIDI. There is a lot of controls and to make the hardware less expensive and easier to build the starting point is a simple html page using WebMIDI + WebSerial, which, opened in one of the supported browsers (Chrome, Opera, Edge) offers a full GUI interface.  
 Teensy is using the USB Serial port to show the status and other info about the current state.  
 Second control option for less frequently used configuration and debugging is a CLI interface.
@@ -177,4 +177,6 @@ The Neural Network Modeler is based on implementation by [Keith Bloemer/GuitarML
 
 [embedded_cli](https://github.com/funbiscuit/embedded-cli) by Sviatoslav Kokurin.
 
-
+---  
+(c) 2024 by Piotr Zapart  
+www.hexefx.com  
