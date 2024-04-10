@@ -107,58 +107,35 @@ Recommended upgrade would be a high impendace input buffer using an opamp or eve
 See [**here**](diy_buffer.md) for a simple DIY project. 
 Alternatively, another pedal with buffered bypass can be used instead.  
 
-List of preconfigured hardware platforms as of April 2024:  
-- Teensy4.0 + Audio Adaptor Board  
-- Teensy4.1 + Audio Adaptor Board  
-- T41-GFX - my custom made Teensy4.1+WM8731 based pedal, used for development  
-- T40-GFX - Teensy4.0 + SGTL5000 codec on Wire1  
-- Blackaddr TGA Pro + Teensy4.0  
-- Blackaddr TGA Pro + Teensy4.1  
-- Teensy4.0 + ES8388 codec  
-- Teensy4.1 + ES8388 codec  
-  
-The project is designed to be easily adaptable to many Teensy based hardware platforms, take a look [**here**](hw_platform.md) for more details.  
- 
-
-**Teensy4.1**  
-The main project using all the features requires Teensy4.1 with **installed PSRAM** chip.  
-
-**Teensy4.0**  
-A stripped down version able to run on Teensy4 is planned for near future.  
-
-**Audio Boards**  
-I have developed the project using my own designed HW platform, using the WM8731 codec ship and I2S2 interface for audio.  
-There are two other build options available at the moment (03.2024):  
-1. Teensy Audio Adaptor board, using the SGTL5000 codec and I2S(1) - default setting for the project.  
-2. TGA Pro by Blackaddr, uses WM8731 codec on I2S(1). As of now, the WM8731 is obsolete, but many people might have there boards and this is a much better HW option compared to the TeensyAudioBoard, considering the gain levels used in guitar applications.  
-   
 The hardware build option is set either in the `platformio.ini` file  
-`default_envs = teensy_audio_board`  
+`default_envs = t40_audio_board`  
 or by invoking the build command from the terminal:  
-`pio run -e teensy_audio_board`  
-The available variable values are:  
-```
-teensy_audio_board  
-blackaddr_tgapr    
-hexefx_t41gfx  
-```
-I do have plans to design a dedicated PCB which can be fitted into one of the common guitar pedal enclosures. When done, it will be available in the *hardware* folder.  
-For the available hardware platforms, the codecs and I2S I/O is configured to use full 24bit/44.1kHz audio stream.  
+`pio run -e t40_audio_board`  
 
-**Adapting to other audio boards**  
-Adapting is relatively simple. The two required changes are:  
-1. Provide a codec driver and configure it with the following I2S specs:  
-	- Sampling frequency: 44.1kHz
-	- Master clock = 256 * Fs
-	- 32bit left justified word (I2S format)
-2. Set the correct I2S inteface. Drivers for I2S (default in Teensy Audio lib) and I2S2 are provided in the `hexefx_audio_F32` library.
+List of preconfigured hardware platforms as of April 2024:  
+- `t40_audio_board` - Teensy4.0 + Audio Adaptor Board  
+- `t41_audio_board` - Teensy4.1 + Audio Adaptor Board 
+- `hexefx_t41gfx` - T41-GFX - my custom made Teensy4.1+WM8731 based pedal, used for development 
+- `hexefx_t40gfx` - T40-GFX - Teensy4.0 + SGTL5000 codec on Wire1, another of my pedals used for testing using the SGTL5000 codec chip     
+- `t40_blackaddr_tgapro` - Blackaddr TGA Pro + Teensy4.0  
+- `t41_blackaddr_tgapro` - Blackaddr TGA Pro + Teensy4.1   
+- `t40_es8388` - Teensy4.0 + ES8388 codec  
+- `t41_es8388` - Teensy4.1 + ES8388 codec  
+ 
+The project is designed to be easily adaptable to many Teensy based hardware platforms, take a look [**here**](hw_platform.md) for more details.  
+
+A dedicated hardware platform is in the works, utilizing high quality AD/DA converters,  optimized for hi gain sounds and using a capacitive touch screen for the user interface. When done, it will be available in the *hardware* folder.  
+
+## Caution!  
+A high gain sound, like the Preset 5 might and do create a feedback and oscillation on some of the hardware platfoms, namely the SGTL5000 and ES8388. The noise gate can cut it off, although some oscilaltion will be audible when the gate closes.  WM8731 seems to be more immune to oscillations.  
+A very high gain devices require a careful layout and design to make them as silent as possible. It is also a reason for designing a dedicated HW platform for the TGX4 project.  
 
 ## Usage  
 
 1. Open the project in the PlatformIO environment.
-2. Open the `platformio.ini` file abd set the required haedware configuration.
+2. Open the `platformio.ini` file abd set the required hardware configuration.
 3. Build the project and upload it to the Teensy4 board.
-4. Open the `TGX4_1.html` file placed in the `html` folder in Chrome, Chromium or Edge browser (others do not implement WebMIDI and WebSerial).
+4. Open the `TGX4.html` file placed in the `html` folder in Chrome, Chromium or Edge browser (others do not implement WebMIDI and WebSerial).
 5. Connect to the USB MIDI interface listed as Teensy.  
 6. Click `Connect` button on the top of the page and choose Teensy Serial port.
 7. Use the dials and buttons to control the device.  
@@ -181,6 +158,10 @@ A snaphot of all controlls (except Delay+Reverb Freeze modes) can be saved in 8 
 Presets are stored in EEPROM, pedal remembers the last used one and loads it when booting up.  
 Preset system will most likely be expanded in the future. The current 8 slot option is a starting point only.  
 
+## Demos  
+https://www.youtube.com/watch?v=AlLRwmOwigU
+<iframe width="560" height="315" src="https://www.youtube.com/embed/AlLRwmOwigU?si=z8O5kh2bPQcrd-nC" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>  
+
 ## Command Line Interface  
 Use the **Term** button places on the main **Amp** page to switch between the status report and the CLI. Type `help` to list all the commands. CLI uses history and autocomplete.  
 Avialable commands:  
@@ -188,6 +169,7 @@ Avialable commands:
 - `meminfo`- print RAM memory details  
 - `load`- list CPU loads for all components  
 - `midi-ch`- assing a new MIDI channel for the Teensy. Use it when controlling the device with other MIDI controllers. The WebMIDI interface sends the data on channel 1.  
+- `i2c` - I2C scanner, takes one parameter: 0, 1 or 2 (Wire, Wire1, Wire2) and reports all found devices.
 
 ## Credits  
 The Neural Network Modeler is based on implementation by [Keith Bloemer/GuitarML](https://github.com/GuitarML/Seed)  

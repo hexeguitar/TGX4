@@ -50,8 +50,15 @@ build_flags =
 board = teensy41	;or teensy4.0
 build_flags = 
 		${env.build_flags}
+		-DUSE_YOUR_CUSTOM_HARDWARE_PLATFORM
 		-DUSE_I2S1		; if using standard I2S
 		;-DUSE_I2S2		; if using I2S2
 		-DUSE_SGTL5000	; define which codec is used, optional
 
+```  
+Change the default build environment to the new defined:  
 ```
+[platformio]
+default_envs = your_custom_hw_platform
+```
+Build and upload the project.  
