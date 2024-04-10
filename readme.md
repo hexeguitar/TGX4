@@ -159,8 +159,8 @@ Presets are stored in EEPROM, pedal remembers the last used one and loads it whe
 Preset system will most likely be expanded in the future. The current 8 slot option is a starting point only.  
 
 ## Demos  
-https://www.youtube.com/watch?v=AlLRwmOwigU
-<iframe width="560" height="315" src="https://www.youtube.com/embed/AlLRwmOwigU?si=z8O5kh2bPQcrd-nC" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>  
+https://www.youtube.com/watch?v=AlLRwmOwigU  
+[![Watch the video](https://img.youtube.com/vi/AlLRwmOwigU/0.jpg)](https://youtu.be/AlLRwmOwigU)
 
 ## Command Line Interface  
 Use the **Term** button places on the main **Amp** page to switch between the status report and the CLI. Type `help` to list all the commands. CLI uses history and autocomplete.  
