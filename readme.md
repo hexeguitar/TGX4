@@ -4,7 +4,8 @@ This project aims at creating a nice usable set of guitar and bass tones while u
 It combines a Neural Network amp modeler with stereo IR cabinet emulation, versatile stereo Ping-Pong delay and 3 different reverbs. There is also a Compressor and Booster with octave up mode for further input tone shaping.  
 
 ### Change-log  
-03.2024 - Initial release.  
+V1.3 - 03.2024 - Initial release.  
+V1.4 - 04.2024 - Multiple hardware platforms added
 
 ### User Interface  
 In general all the parameters are controlled via MIDI. There is a lot of controls and to make the hardware less expensive and easier to build the starting point is a simple html page using WebMIDI + WebSerial, which, opened in one of the supported browsers (Chrome, Opera, Edge) offers a full GUI interface.  
@@ -83,7 +84,7 @@ There are 3 types of reverb built in, **only one can be active** at a time:
 	* Pitch Shim - shimmer effect pitch setting  
 	* Freeze mode - creates infinite reverb sound  
 	* Bleed In - amount of input signal fed into the reverb while in Freeze mode.  
-2. **Reverb SC** based on Sean Costello's reverb algorithm using multiple feedback delay lines:  
+2. **Reverb SC** based on Sean Costello's reverb algorithm using multiple feedback delay lines *(available only with PSRAM installed)*:  
 	* Time - reverb time  
 	* Lowpass Freq - tail treble loss  
 	* Freeze mode - infinite reverb sound  
@@ -97,9 +98,27 @@ There are 3 types of reverb built in, **only one can be active** at a time:
 Press **Plate**, **Spring** or **ReverbSC** button to activate the reverb.  
 
 ## Hardware  
-In the simplest form, the required hardware can be a Teensy 4.1 with installed PSRAM chip and the audio adapter board.  
-Recommended upgrade would be a high impendace input buffer using an opamp or even a simple transistor one. See [here](diy_buffer.md) for a simple DIY project. 
+In the simplest form, this project can run on a Teensy 4.0 or T.4 and the audio adapter board.  
+Adding PSRAM to the Teensy4.1 opens up the full set of features. Lack of PSRAM resutlts in:  
+- ReverbSC disabled,
+- Delay has a shorter time range.  
+  
+Recommended upgrade would be a high impendace input buffer using an opamp or even a simple transistor one.  
+See [**here**](diy_buffer.md) for a simple DIY project. 
 Alternatively, another pedal with buffered bypass can be used instead.  
+
+List of preconfigured hardware platforms as of April 2024:  
+- Teensy4.0 + Audio Adaptor Board  
+- Teensy4.1 + Audio Adaptor Board  
+- T41-GFX - my custom made Teensy4.1+WM8731 based pedal, used for development  
+- T40-GFX - Teensy4.0 + SGTL5000 codec on Wire1  
+- Blackaddr TGA Pro + Teensy4.0  
+- Blackaddr TGA Pro + Teensy4.1  
+- Teensy4.0 + ES8388 codec  
+- Teensy4.1 + ES8388 codec  
+  
+The project is designed to be easily adaptable to many Teensy based hardware platforms, take a look [**here**](hw_platform.md) for more details.  
+ 
 
 **Teensy4.1**  
 The main project using all the features requires Teensy4.1 with **installed PSRAM** chip.  

@@ -20,6 +20,14 @@ const char PROGMEM *termPosHome = "\x1b[;H";
 
 const char PROGMEM *midiChannel_err_msg = "Please provide a value in range 1 - 16";
 
+#if ARDUINO_TEENSY40
+	const char hw_type_msg[]="T4.0";
+#elif ARDUINO_TEENSY41
+	const char hw_type_msg[]="T4.1";
+#else
+	const char hw_type_msg[]="???";
+#endif
+
 static uint32_t timeNow, timeLast;
 static uint8_t infoLineTimeout = INFOLINE_TIMEOUT;
 
@@ -33,7 +41,8 @@ void cb_presetRST(EmbeddedCli *cli, char *args, void *context);
 void cb_memInfo(EmbeddedCli *cli, char *args, void *context);
 void cb_componentCPU(EmbeddedCli *cli, char *args, void *context);
 void cb_setMidiChannel(EmbeddedCli *cli, char *args, void *context);
-
+void cb_i2cScan(EmbeddedCli *cli, char *args, void *context);
+void i2c_scan(TwoWire *i2cBus);
 
 stats_mode_t statsMode = STATS_MODE_CONSOLE;
 const char* infoLine = NULL;
@@ -48,7 +57,7 @@ char bf[20] = "";
 // ---------------------------------------------------------------------
 FLASHMEM void stats_init()
 {
-	statsMode = STATS_MODE_INFO;
+	//statsMode = STATS_MODE_INFO;
 	cli->writeChar = writeChar;
 	embeddedCliAddBinding(cli, {
 			"preset-rst",          			// command name (spaces are not allowed)
@@ -78,6 +87,13 @@ FLASHMEM void stats_init()
 			nullptr,
 			cb_setMidiChannel
 	});	
+	embeddedCliAddBinding(cli, {
+			"i2c",
+			"Scan I2C bus (0, 1, 2)",
+			false,
+			nullptr,
+			cb_i2cScan
+	});		
 }
 // ---------------------------------------------------------------------
 FLASHMEM void stats_setMode(stats_mode_t mode)
@@ -129,12 +145,7 @@ void writeChar(EmbeddedCli *embeddedCli, char c)
 {
 	DBG_SERIAL.write(c);
 }
-// ---------------------------------------------------------------------
-void cb_presetRST(EmbeddedCli *cli, char *args, void *context)
-{
-	preset_writeDefaults();
-	DBG_SERIAL.println("Done!");
-}
+
 // ---------------------------------------------------------------------
 void stats_displayMsg(const char *msg, stats_color_t color)
 {
@@ -245,7 +256,7 @@ FLASHMEM void printStatus()
 	DBG_SERIAL.printf("Delay: %s Freeze: %s\r\n", preset_getFlag(PRESET_FLAG_DELAY_EN) ? on : off, 
 							echo.freeze_get()  ? on : off);	
 	DBG_SERIAL.printf("Preset: %d ", preset_getCurrentIdx()+1);	
-	DBG_SERIAL.printf("CPU load: %2.2f%%  Mem usage: %d    MIDI channel: %d  \r\n", load, memUsage, midiChannel_get()); 
+	DBG_SERIAL.printf("CPU load: %2.2f%%  Mem usage: %d    MIDI channel: %d HW:%s   \r\n", load, memUsage, midiChannel_get(), hw_type_msg); 
 	// status line, displayed only once
 	if (infoLine)
 	{
@@ -328,7 +339,7 @@ void cb_memInfo(EmbeddedCli *cli, char *args, void *context)
 	DBG_SERIAL.printf("avail PSRAM %8d b %5d kb\r\n", psram, psram >> 10);
 #endif
 }
-
+// ---------------------------------------------------------------------
 uint32_t *ptrFreeITCM;	 // Set to Usable ITCM free RAM
 uint32_t sizeofFreeITCM; // sizeof free RAM in uint32_t units.
 uint32_t SizeLeft_etext;
@@ -351,12 +362,12 @@ FLASHMEM void getFreeITCM()
 		jj += ptrFreeITCM[ii];
 	DBG_SERIAL.printf("ITCM DWORD cnt = %u [#bytes=%u] \r\n", jj, jj * 4);
 }
-
+// ---------------------------------------------------------------------
 void cb_componentCPU(EmbeddedCli *cli, char *args, void *context)
 {
 	stats_printComponents();
 }
-
+// ---------------------------------------------------------------------
 // Print max CPU load for all components
 void stats_printComponents()
 {
@@ -377,7 +388,7 @@ void stats_printComponents()
 	DBG_SERIAL.printf("LowCut:\t%.2f\r\n", masterLowCut.processorUsageMax());
 	DBG_SERIAL.printf("Volume:\t\t\t%.2f\r\n", masterVol.processorUsageMax());
 }
-
+// ---------------------------------------------------------------------
 void cb_setMidiChannel(EmbeddedCli *cli, char *args, void *context)
 {
     if (embeddedCliGetTokenCount(args) == 0)
@@ -404,4 +415,86 @@ void cb_setMidiChannel(EmbeddedCli *cli, char *args, void *context)
 			stats_reset_color();			
 		}
 	}
+}
+// ---------------------------------------------------------------------
+void cb_presetRST(EmbeddedCli *cli, char *args, void *context)
+{
+	preset_writeDefaults();
+	preset_init();
+	DBG_SERIAL.println("Done!");
+}
+// ---------------------------------------------------------------------
+void cb_i2cScan(EmbeddedCli *cli, char *args, void *context)
+{
+	TwoWire *i2cBus;
+    if (embeddedCliGetTokenCount(args) == 0)
+	{
+		stats_set_color(STATS_COLOR_GREEN);
+		i2cBus = &Wire;
+		DBG_SERIAL.println("Scanning bus: Wire");
+		stats_reset_color();		
+	}
+    else
+	{
+		const char* arg = embeddedCliGetToken(args, 1);
+		uint32_t wireNo = strtoul(arg, NULL, 10);
+		if (wireNo >= 0 && wireNo < 3)
+		{
+			stats_set_color(STATS_COLOR_GREEN);
+			switch(wireNo)
+			{
+				case 0: i2cBus = &Wire; break;
+				case 1: i2cBus = &Wire1; break;
+				case 2: i2cBus = &Wire2; break;
+				default: i2cBus = &Wire; break;
+			}
+			DBG_SERIAL.printf("Scanning bus: Wire%d\r\n", wireNo);
+			stats_reset_color();
+		}
+		else
+		{
+			stats_set_color(STATS_COLOR_RED);
+			DBG_SERIAL.println("Error! Wrong I2C bus number!");
+			stats_reset_color();
+			return;			
+		}
+	}
+	i2c_scan(i2cBus);
+}
+
+// ---------------------------------------------------------------------
+void i2c_scan(TwoWire *i2cBus)
+{
+	uint8_t i, err;
+	TwoWire *_i2c = i2cBus;
+	if (!i2cBus)
+	{ 
+		stats_set_color(STATS_COLOR_RED);
+		DBG_SERIAL.println("Error! Please provide valid I2C bus!"); 
+		stats_reset_color();
+		return;	
+	}
+	_i2c->begin();
+	DBG_SERIAL.print("   ");
+	for (i = 0; i < 16; i++) { DBG_SERIAL.printf("%3x", i); }
+	for (i = 0; i <= 127; i++)
+	{
+		if (i % 16 == 0)
+		{
+			DBG_SERIAL.printf("\n%02x:", i & 0xF0);
+		}
+		_i2c->beginTransmission(i);
+		err = _i2c->endTransmission();
+		if (err==0) 	        
+		{ 
+			stats_set_color(STATS_COLOR_CYAN);
+			DBG_SERIAL.printf(" %02x", i);
+			stats_reset_color(); 
+		}
+		else 					
+		{ 
+			DBG_SERIAL.printf(" XX"); 
+		}		   
+	}
+	DBG_SERIAL.println("");
 }

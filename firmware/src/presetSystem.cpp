@@ -61,16 +61,16 @@ static uint32_t t_now, t_saveParam, t_saveLastPreset;
 static bool saveParamsFlag = false;
 static bool saveLastPresetFlag = false;
 const uint16_t marker_eepAddr = 0;
-const uint8_t eep_marker = 0x5B;
+const uint8_t eep_marker = 0x5A;
 const uint16_t midiChannel_eepAddr = marker_eepAddr + sizeof(eep_marker);
 uint8_t midiChannel = 1;
 const uint16_t presetLast_eepAddr = midiChannel_eepAddr + sizeof(midiChannel);
 const uint16_t preset_eepAddr_base = presetLast_eepAddr + sizeof(presetLast_eepAddr);
-const uint16_t presetSizeBytes = sizeof(preset_t);
+const uint16_t preset_eepSizeBytes = sizeof(currentPreset.flags) + sizeof(currentPreset.fxParams)/sizeof(float32_t);
 
 char msgBf[20]; 
 
-void preset_writeToEeprom();
+void preset_writeToEeprom(uint8_t presetIdx, preset_t *presetPtr);
 
 /**
  * @brief check for the marker at addr 0 and if not found
@@ -85,15 +85,13 @@ FLASHMEM void preset_init()
 	{
 		preset_writeDefaults();
 	}
-	else 
-	{	
-		EEPROM.get(midiChannel_eepAddr, midiChannel);
-		EEPROM.get(presetLast_eepAddr, currentPresetIdx);
-		if (currentPresetIdx > PRESET_MAX_NO) currentPresetIdx = 0;
-		delay(100);
-		masterLowCut.setLowShelf(0, 20.0f, -15.0f, 1.0f);
-		preset_load(currentPresetIdx);
-	}
+	EEPROM.get(midiChannel_eepAddr, midiChannel);
+	EEPROM.get(presetLast_eepAddr, currentPresetIdx);
+	if (currentPresetIdx > PRESET_MAX_NO) currentPresetIdx = 0;
+	delay(100);
+	masterLowCut.setLowShelf(0, 20.0f, -15.0f, 1.0f);
+	preset_load(currentPresetIdx);
+
 }
 // --------------------------------------------------------------
 uint8_t preset_getCurrentIdx()
@@ -185,6 +183,9 @@ FLASHMEM uint8_t preset_getFlag(preset_paramFlag_t flag)
 	}
 	return result;
 }
+
+uint32_t preset_getFlag() { return currentPreset.flags.raw; } // return all flags as 32bit word
+
 #define DLY_SETUP 100
 // --------------------------------------------------------------
 FLASHMEM void preset_load(uint32_t presetNo)
@@ -193,7 +194,7 @@ FLASHMEM void preset_load(uint32_t presetNo)
 	// if there is a pending preset save, write the previous one before  changing to a new one
 	if (saveParamsFlag) 
 	{
-		preset_writeToEeprom();
+		preset_writeToEeprom(currentPresetIdx, &currentPreset);
 		saveParamsFlag = false;
 	}
 	if (presetNo != currentPresetIdx) 
@@ -202,8 +203,16 @@ FLASHMEM void preset_load(uint32_t presetNo)
 		t_saveLastPreset = millis();
 	}
 	currentPresetIdx = presetNo;
-	uint16_t eepAddr = preset_eepAddr_base + presetSizeBytes * currentPresetIdx;
-	EEPROM.get(eepAddr, currentPreset);
+	uint16_t eepAddr = preset_eepAddr_base + preset_eepSizeBytes * currentPresetIdx;
+	// read the data, scale params and populate the current preset
+	EEPROM.get(eepAddr, currentPreset.flags);
+	uint8_t p = 0;
+	eepAddr += sizeof(currentPreset.flags.raw);
+	while (p < PRESET_PARAM_LAST)
+	{
+		currentPreset.fxParams[p] = (float32_t)EEPROM.read(eepAddr++) / 255.0f;
+		p++;
+	}
 	AudioNoInterrupts();
 	inputSwitch.setMode((AudioSwitchSelectorStereo::selector_mode_t) currentPreset.flags.bits.inSelect);
 	compressor.bypass_set(!currentPreset.flags.bits.compressorEn);
@@ -216,63 +225,63 @@ FLASHMEM void preset_load(uint32_t presetNo)
 	echo.bypass_setMode(AudioEffectDelayStereo_F32::BYPASS_MODE_OFF);
 	reverbs_set((active_reverb_e) currentPreset.flags.bits.revebType, !currentPreset.flags.bits.reverbEn);
 	// --- Compressor ---
-	compressor.setPreGain(currentPreset.fxParams[PRESET_PARAM_COMP_PREGAIN]);
-	compressor.setThresh_dBFS(currentPreset.fxParams[PRESET_PARAM_COMP_THRES]);
-	compressor.setAttack_sec(currentPreset.fxParams[PRESET_PARAM_COMP_ATTACK]);
-	compressor.setRelease_sec(currentPreset.fxParams[PRESET_PARAM_COMP_RELEASE]);
-	compressor.setPostGain(currentPreset.fxParams[PRESET_PARAM_COMP_POSTGAIN]);
+	compressor.setPreGain_normalized(preset_getFXparam(PRESET_PARAM_COMP_PREGAIN));
+	compressor.setThresh_normalized(preset_getFXparam(PRESET_PARAM_COMP_THRES));
+	compressor.setAttack_normalized(preset_getFXparam(PRESET_PARAM_COMP_ATTACK));
+	compressor.setRelease_normalized(preset_getFXparam(PRESET_PARAM_COMP_RELEASE));
+	compressor.setPostGain_normalized(preset_getFXparam(PRESET_PARAM_COMP_POSTGAIN));
 	// --- Booster ---
-	booster.drive(currentPreset.fxParams[PRESET_PARAM_BOOST_DRIVE]);
-	booster.bottom(currentPreset.fxParams[PRESET_PARAM_BOOST_BOTTOM]);
-	booster.tone(currentPreset.fxParams[PRESET_PARAM_BOOST_PRESENCE]);
-	booster.mix(currentPreset.fxParams[PRESET_PARAM_BOOST_MIX]);
-	booster.volume(currentPreset.fxParams[PRESET_PARAM_BOOST_LEVEL]);
+	booster.drive_normalized(preset_getFXparam(PRESET_PARAM_BOOST_DRIVE));
+	booster.bottom(preset_getFXparam(PRESET_PARAM_BOOST_BOTTOM));
+	booster.tone(preset_getFXparam(PRESET_PARAM_BOOST_PRESENCE));
+	booster.mix(preset_getFXparam(PRESET_PARAM_BOOST_MIX));
+	booster.volume(preset_getFXparam(PRESET_PARAM_BOOST_LEVEL));
 	// --- Amp ---
-	gate.setThreshold(currentPreset.fxParams[PRESET_PARAM_AMP_GATE]);
-	amp.gain(currentPreset.fxParams[PRESET_PARAM_AMP_GAIN]);
-	toneStack.bass(currentPreset.fxParams[PRESET_PARAM_AMP_BASS]);
-	toneStack.mid(currentPreset.fxParams[PRESET_PARAM_AMP_MID]);
-	toneStack.treble(currentPreset.fxParams[PRESET_PARAM_AMP_TREBLE]);
-	xfader_main.mix(currentPreset.fxParams[PRESET_PARAM_AMP_FXMIX]);	
+	gate.setThreshold_normalized(preset_getFXparam(PRESET_PARAM_AMP_GATE));
+	amp.gain(preset_getFXparam(PRESET_PARAM_AMP_GAIN));
+	toneStack.bass(preset_getFXparam(PRESET_PARAM_AMP_BASS));
+	toneStack.mid(preset_getFXparam(PRESET_PARAM_AMP_MID));
+	toneStack.treble(preset_getFXparam(PRESET_PARAM_AMP_TREBLE));
+	xfader_main.mix(preset_getFXparam(PRESET_PARAM_AMP_FXMIX));	
 	// --- Delay ---
-	echo.time(currentPreset.fxParams[PRESET_PARAM_DELAY_TIME], true); // force immediate update
-	echo.feedback(currentPreset.fxParams[PRESET_PARAM_DELAY_REPEATS]);
-	echo.mix(currentPreset.fxParams[PRESET_PARAM_DELAY_MIX]);
-	echo.treble_cut(currentPreset.fxParams[PRESET_PARAM_DELAY_HICUT]);
-	echo.bass_cut(currentPreset.fxParams[PRESET_PARAM_DELAY_LOWCUT]);
-	echo.treble(currentPreset.fxParams[PRESET_PARAM_DELAY_TREBLE]);
-	echo.bass(currentPreset.fxParams[PRESET_PARAM_DELAY_BASS]);
-	echo.mod_rate(currentPreset.fxParams[PRESET_PARAM_DELAY_MODRATE]);
-	echo.mod_depth(currentPreset.fxParams[PRESET_PARAM_DELAY_MODDEPTH]);
+	echo.time(preset_getFXparam(PRESET_PARAM_DELAY_TIME), true); // force immediate update
+	echo.feedback(preset_getFXparam(PRESET_PARAM_DELAY_REPEATS));
+	echo.mix(preset_getFXparam(PRESET_PARAM_DELAY_MIX));
+	echo.treble_cut(preset_getFXparam(PRESET_PARAM_DELAY_HICUT));
+	echo.bass_cut(preset_getFXparam(PRESET_PARAM_DELAY_LOWCUT));
+	echo.treble(preset_getFXparam(PRESET_PARAM_DELAY_TREBLE));
+	echo.bass(preset_getFXparam(PRESET_PARAM_DELAY_BASS));
+	echo.mod_rate(preset_getFXparam(PRESET_PARAM_DELAY_MODRATE));
+	echo.mod_depth(preset_getFXparam(PRESET_PARAM_DELAY_MODDEPTH));
 	echo.freeze(false);
 	// --- Reverb
-	reverbPL.size(currentPreset.fxParams[PRESET_PARAM_REVERBPL_SIZE]);
-	reverbPL.diffusion(currentPreset.fxParams[PRESET_PARAM_REVERBPL_DIFF]);
-	reverbPL.mix(currentPreset.fxParams[PRESET_PARAM_REVERBPL_MIX]);
-	reverbPL.lodamp(currentPreset.fxParams[PRESET_PARAM_REVERBPL_BASSCUT]);
-	reverbPL.hidamp(currentPreset.fxParams[PRESET_PARAM_REVERBPL_TREBLECUT]);
-	reverbPL.lowpass(1.0f - currentPreset.fxParams[PRESET_PARAM_REVERBPL_TREBLE]);
-	reverbPL.hipass(1.0f - currentPreset.fxParams[PRESET_PARAM_REVERBPL_BASS]);
-	reverbPL.freezeBleedIn(currentPreset.fxParams[PRESET_PARAM_REVERBPL_BLEEDIN]);
-	reverbPL.pitchSemitones((int8_t)currentPreset.fxParams[PRESET_PARAM_REVERBPL_PITCH]);
-	reverbPL.pitchMix(currentPreset.fxParams[PRESET_PARAM_REVERBPL_PITCHMIX]);
-	reverbPL.shimmer(currentPreset.fxParams[PRESET_PARAM_REVERBPL_SHIMMER]);
-	reverbPL.shimmerPitchSemitones((int8_t)currentPreset.fxParams[PRESET_PARAM_REVERBPL_PITCHSHIMM]);
+	reverbPL.size(preset_getFXparam(PRESET_PARAM_REVERBPL_SIZE));
+	reverbPL.diffusion(preset_getFXparam(PRESET_PARAM_REVERBPL_DIFF));
+	reverbPL.mix(preset_getFXparam(PRESET_PARAM_REVERBPL_MIX));
+	reverbPL.lodamp(preset_getFXparam(PRESET_PARAM_REVERBPL_BASSCUT));
+	reverbPL.hidamp(preset_getFXparam(PRESET_PARAM_REVERBPL_TREBLECUT));
+	reverbPL.lowpass(1.0f - preset_getFXparam(PRESET_PARAM_REVERBPL_TREBLE));
+	reverbPL.hipass(1.0f - preset_getFXparam(PRESET_PARAM_REVERBPL_BASS));
+	reverbPL.freezeBleedIn(preset_getFXparam(PRESET_PARAM_REVERBPL_BLEEDIN));
+	reverbPL.pitchSemitones((int8_t)preset_getFXparam(PRESET_PARAM_REVERBPL_PITCH));
+	reverbPL.pitchMix(preset_getFXparam(PRESET_PARAM_REVERBPL_PITCHMIX));
+	reverbPL.shimmer(preset_getFXparam(PRESET_PARAM_REVERBPL_SHIMMER));
+	reverbPL.shimmerPitchSemitones((int8_t)preset_getFXparam(PRESET_PARAM_REVERBPL_PITCHSHIMM));
 	reverbPL.freeze(false);
-	reverbSC.feedback(currentPreset.fxParams[PRESET_PARAM_REVERBSC_TIME]);
-	reverbSC.mix(currentPreset.fxParams[PRESET_PARAM_REVERBSC_MIX]);
-	reverbSC.lowpass(1.0f-currentPreset.fxParams[PRESET_PARAM_REVERBSC_LOWPASSF]);
+	reverbSC.feedback(preset_getFXparam(PRESET_PARAM_REVERBSC_TIME));
+	reverbSC.mix(preset_getFXparam(PRESET_PARAM_REVERBSC_MIX));
+	reverbSC.lowpass(1.0f-preset_getFXparam(PRESET_PARAM_REVERBSC_LOWPASSF));
 	reverbSC.freeze(false);
-	reverbSP.time(currentPreset.fxParams[PRESET_PARAM_REVERBSP_TIME]);
-	reverbSP.mix(currentPreset.fxParams[PRESET_PARAM_REVERBSP_MIX]);
-	reverbSP.bass_cut(currentPreset.fxParams[PRESET_PARAM_REVERBSP_BASSCUT]);
-	reverbSP.treble_cut(currentPreset.fxParams[PRESET_PARAM_REVERBSP_TREBLECUT]);
-	xfader_FX.mix((currentPreset.fxParams[PRESET_PARAM_DELAY_REVERB_MIX]));
-	masterLowCut.makeupGain(1.0f + currentPreset.fxParams[PRESET_PARAM_MASTER_LOWCUT]*0.5f);
+	reverbSP.time(preset_getFXparam(PRESET_PARAM_REVERBSP_TIME));
+	reverbSP.mix(preset_getFXparam(PRESET_PARAM_REVERBSP_MIX));
+	reverbSP.bass_cut(preset_getFXparam(PRESET_PARAM_REVERBSP_BASSCUT));
+	reverbSP.treble_cut(preset_getFXparam(PRESET_PARAM_REVERBSP_TREBLECUT));
+	xfader_FX.mix((preset_getFXparam(PRESET_PARAM_DELAY_REVERB_MIX)));
+	masterLowCut.makeupGain(1.0f + preset_getFXparam(PRESET_PARAM_MASTER_LOWCUT)*0.5f);
 	masterLowCut.setLowShelf(0, MASTER_LOWCUT_FMIN +\
-		 currentPreset.fxParams[PRESET_PARAM_MASTER_LOWCUT]*MASTER_LOWCUT_FMAX, -15.0f, 1.0f);
-	masterVol.setGain(currentPreset.fxParams[PRESET_PARAM_MASTER_VOLUME]);
-	masterVol.setPan(currentPreset.fxParams[PRESET_PARAM_MASTER_PAN]);
+		 preset_getFXparam(PRESET_PARAM_MASTER_LOWCUT)*MASTER_LOWCUT_FMAX, -15.0f, 1.0f);
+	masterVol.setGain(preset_getFXparam(PRESET_PARAM_MASTER_VOLUME));
+	masterVol.setPan(preset_getFXparam(PRESET_PARAM_MASTER_PAN));
 
 	AudioInterrupts();
 }
@@ -283,15 +292,29 @@ void preset_save()
 	t_saveParam = millis();
 }
 // --------------------------------------------------------------
-void preset_writeToEeprom()
+void preset_writeToEeprom(uint8_t presetIdx, preset_t *presetPtr)
 {
-	uint32_t eepAddr = preset_eepAddr_base + currentPresetIdx*presetSizeBytes;
-	uint8_t *dataPtr = (uint8_t *)&currentPreset;
-	for (uint16_t i=0; i<sizeof(currentPreset); i++)
+	if (presetIdx >= PRESET_MAX_NO) return;
+	uint32_t eepAddr = preset_eepAddr_base + preset_eepSizeBytes*presetIdx;
+	uint32_t addrEnd = eepAddr + sizeof(currentPreset.flags);
+	uint8_t *dataPtr = (uint8_t *)&presetPtr->flags.raw;
+	// write flags
+	while (eepAddr < addrEnd)
 	{
-		EEPROM.update(eepAddr + i, *dataPtr++);
+		EEPROM.update(eepAddr, *dataPtr);
+		eepAddr++;
+		dataPtr++;
 	}
-	
+	// eepAddr is at start of params  write them as uint8_t
+	addrEnd = eepAddr + sizeof(currentPreset.fxParams)/sizeof(float32_t);
+	uint8_t param_u8;
+	while (eepAddr < addrEnd)
+	{
+		param_u8 = *(float32_t *)dataPtr * 255.0f;
+		EEPROM.update(eepAddr, param_u8);
+		eepAddr++;
+		dataPtr += 4;
+	}
 	stats_displayMsg("Preset saved.", STATS_COLOR_YELLOW);
 }
 // --------------------------------------------------------------
@@ -302,7 +325,7 @@ void presetSystem_process()
 		t_now = millis();
 		if (t_now - t_saveParam > save_timeout)
 		{
-			preset_writeToEeprom();
+			preset_writeToEeprom(currentPresetIdx, &currentPreset);
 			saveParamsFlag = false;
 		}
 	}
@@ -333,11 +356,15 @@ void midiChannel_set(uint8_t val)
 // --------------------------------------------------------------
 void preset_writeDefaults(void)
 {
+	uint8_t i = 0;
 	DBG_SERIAL.println("Populating EEPROM with default presets...");
 	EEPROM.put(marker_eepAddr, eep_marker); 				// write the marker 
 	EEPROM.put(midiChannel_eepAddr, MIDI_CHANNEL_DEFAULT);
-	EEPROM.put(presetLast_eepAddr, currentPresetIdx); 		// and the default last preset	
-	EEPROM.put(preset_eepAddr_base, presets_default);		
+	EEPROM.put(presetLast_eepAddr, PRESET_NO_DEFAULT); 		// and the default last preset	
+	for (i=0; i<PRESET_MAX_NO; i++)
+	{
+		preset_writeToEeprom(i, (preset_t *)&presets_default[i]);
+	}
 	preset_load(currentPresetIdx);							// reload current preset
 }
 // --------------------------------------------------------------

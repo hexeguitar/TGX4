@@ -2,6 +2,7 @@
 #include "reverbs.h"
 #include "audioComponents.h"
 #include "midi_mapping.h"
+#include "stats.h"
 
 #define REVEB_MAX_IDX		(2u)		// max number of reverbs
 #define REVERB_PITCH_TABLE_SIZE	(9u)
@@ -32,7 +33,7 @@ float32_t mix = 1.0f;
 bool freeze_mode = false;
 bool reverb_bypass = true;
 uint8_t bypassMode = BP_MODE;
-
+extern uint8_t external_psram_size;
 
 const char* reverbs_getName()
 {
@@ -43,10 +44,10 @@ active_reverb_e reverbs_set(active_reverb_e model, bool bypass)
 {
 	if (model <= REVEB_MAX_IDX)
 	{
-		activeReverbIdx = (active_reverb_e) model;
+		
 		reverb_bypass = bypass;
 		reverb_setFreeze(false);
-		switch (activeReverbIdx)
+		switch (model)
 		{
 			case REVERB_PLATE:
 				reverbSC.bypass_setMode(AudioEffectReverbSc_F32::BYPASS_MODE_PASS);
@@ -55,14 +56,30 @@ active_reverb_e reverbs_set(active_reverb_e model, bool bypass)
 				reverbSP.bypass_set(true);
 				reverbPL.bypass_setMode((AudioEffectPlateReverb_F32::bypass_mode_t)bypassMode);
 				reverbPL.bypass_set(bypass);
+				activeReverbIdx = (active_reverb_e) model;
 				break;
 			case REVERB_SC:
-				reverbPL.bypass_setMode(AudioEffectPlateReverb_F32::BYPASS_MODE_PASS);
-				reverbPL.bypass_set(true);
-				reverbSP.bypass_setMode(AudioEffectSpringReverb_F32::BYPASS_MODE_PASS);
-				reverbSP.bypass_set(true);
-				reverbSC.bypass_setMode((AudioEffectReverbSc_F32::bypass_mode_t)bypassMode);
-				reverbSC.bypass_set(bypass);
+		#if ARDUINO_TEENSY41
+				if (external_psram_size > 0)
+				{
+					reverbPL.bypass_setMode(AudioEffectPlateReverb_F32::BYPASS_MODE_PASS);
+					reverbPL.bypass_set(true);
+					reverbSP.bypass_setMode(AudioEffectSpringReverb_F32::BYPASS_MODE_PASS);
+					reverbSP.bypass_set(true);
+					reverbSC.bypass_setMode((AudioEffectReverbSc_F32::bypass_mode_t)bypassMode);
+					reverbSC.bypass_set(bypass);
+					activeReverbIdx = (active_reverb_e) model;
+				}
+				else
+				{
+					stats_displayMsg("No PSRAM, ReverbSC disabled", STATS_COLOR_RED);
+				}
+
+				
+		#else
+				stats_displayMsg("No ReverbSC on Teensy4.0, using Plate Reverb", STATS_COLOR_RED);
+				reverbs_set(REVERB_PLATE, bypass);
+		#endif	
 				break;
 			case REVERB_SPRING:
 				reverbPL.bypass_setMode(AudioEffectPlateReverb_F32::BYPASS_MODE_PASS);
@@ -71,10 +88,12 @@ active_reverb_e reverbs_set(active_reverb_e model, bool bypass)
 				reverbSC.bypass_set(true);
 				reverbSP.bypass_setMode((AudioEffectSpringReverb_F32::bypass_mode_t)bypassMode);
 				reverbSP.bypass_set(bypass);
+				activeReverbIdx = (active_reverb_e) model;
 				break;
 			default:
 				break;	
-		}	
+		}
+		
 	}
 	return activeReverbIdx;
 }
@@ -127,11 +146,11 @@ bool reverb_setFreeze(bool state)
 		case REVERB_PLATE:
 			reverbPL.freeze(state);
 			reply = true;
-			break;
+			break;		
 		case REVERB_SC:
 			reverbSC.freeze(state);
 			reply = true;
-			break;
+			break;			
 		case REVERB_SPRING:
 		default:
 			break;	
@@ -146,10 +165,10 @@ bool reverb_tglFreeze()
 	{
 		case REVERB_PLATE:
 			reply = reverbPL.freeze_tgl();
-			break;
+			break;			
 		case REVERB_SC:
 			reply = reverbSC.freeze_tgl();
-			break;
+			break;		
 		case REVERB_SPRING:
 			reply = true; // will switch to OFF
 		default:
@@ -166,9 +185,10 @@ bool reverb_getFreeze()
 		case REVERB_PLATE:
 			reply = reverbPL.freeze_get();
 			break;
+			break;			
 		case REVERB_SC:
 			reply = reverbSC.freeze_get();
-			break;
+			break;		
 		case REVERB_SPRING:
 		default:
 			break;	

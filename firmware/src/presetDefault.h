@@ -3,23 +3,27 @@
 
 #include "presetSystem.h"
 
+// using normalized parameters to store them as uint8_t instead of float
 
 #define FLAG_DEFAULT_INPUT_SELECT			(AudioSwitchSelectorStereo::SIGNAL_SELECT_L)
 
-#define PARAM_DEFAULT_COMP_PREGAIN 			(1.0f)
-#define PARAM_DEFAULT_COMP_THRES 			(-20.0f)
-#define PARAM_DEFAULT_COMP_RATIO 			(5.0f)
-#define PARAM_DEFAULT_COMP_ATTACK 			(0.005f)
-#define PARAM_DEFAULT_COMP_RELEASE			(0.2f)
-#define PARAM_DEFAULT_COMP_POSTGAIN			(1.0f)
+#define PARAM_DEFAULT_COMP_PREGAIN 			(0.25f)		// rng= 0.0 to 4.0 0.25=>1.0
+#define PARAM_DEFAULT_COMP_THRES 			(0.5f) 		// rng=0 to -40 0.5=>-20dB
+#define PARAM_DEFAULT_COMP_RATIO 			(0.5f) 		// rng=0 to 10, 0.5 => 5.0
+#define PARAM_DEFAULT_COMP_ATTACK 			(0.49f)		// rng=0.001 to 0.1 0.49=>0.005
+#define PARAM_DEFAULT_COMP_RELEASE			(0.11f)		// rng=0.1 to 1.0. 0.11=>0.2
+#define PARAM_DEFAULT_COMP_POSTGAIN			(0.25f)		// rng= 0.0 to 4.0 0.25=>1.0
 
 #define PARAM_DEFAULT_BOOST_DRIVE			(1.0f)
 #define PARAM_DEFAULT_BOOST_BOTTOM			(1.0f)
 #define PARAM_DEFAULT_BOOST_PRESENCE		(1.0f)
 #define PARAM_DEFAULT_BOOST_MIX				(1.0f)
 #define PARAM_DEFAULT_BOOST_LEVEL			(1.0f)
-
-#define PARAM_DEFAULT_GATE_THRES			(-59.0f)
+#if defined(USE_SGTL5000) || defined(USE_ES8388)
+#define PARAM_DEFAULT_GATE_THRES			(0.50f) // scaled to -40.0dB, range 0.0 to -100dB
+#else
+#define PARAM_DEFAULT_GATE_THRES			(0.59f)	// scaled to -59.0dB
+#endif
 #define PARAM_DEFAULT_AMP_GAIN				(1.0f)
 #define PARAM_DEFAULT_AMP_BASS				(1.0f)
 #define PARAM_DEFAULT_AMP_MID				(1.0f)

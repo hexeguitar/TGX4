@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <arm_math.h>
 
+#define PRESET_NO_DEFAULT				(0)
 #define MIDI_CHANNEL_DEFAULT			(1)
 #define PRESET_MAX_NO					(8u) // max number of presets
 
@@ -118,7 +119,6 @@ typedef enum
 	PRESET_PARAM_REVERBSP_MIX,
 	PRESET_PARAM_REVERBSP_BASSCUT,
 	PRESET_PARAM_REVERBSP_TREBLECUT,
-
 	PRESET_PARAM_MASTER_VOLUME,
 	PRESET_PARAM_MASTER_PAN,
 	PRESET_PARAM_DELAY_REVERB_MIX,
@@ -187,7 +187,7 @@ inline void preset_updateFXparam(preset_param_t paramName, float32_t newValue)
 inline float32_t preset_getFXparam(preset_param_t paramName);
 inline float32_t preset_getFXparam(preset_param_t paramName)
 {
-	return currentPreset.fxParams[paramName];
+	return (currentPreset.fxParams[paramName]);
 }
 
 void preset_updateFlag(preset_paramFlag_t flag, uint8_t value);

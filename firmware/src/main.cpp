@@ -1,10 +1,8 @@
 /**
  * @file main.cpp
  * @author Piotr Zapart
- * @brief Teensy4.1 guitar amp emulation project
- * 		--------------------------------------------------------
- * 		----- REQUIRES TEENSY4.1 with PSRAM installed ! --------		
- * 		--------------------------------------------------------
+ * @brief Teensy4 guitar amp emulation project
+ * 
  * 		required libraries: 
  * 			OpenAudio_ArduinoLibrary: https://github.com/chipaudette/OpenAudio_ArduinoLibrary
  * 			HexeFX_audiolib_F32: https://github.com/hexeguitar/hexefx_audiolib_F32
@@ -12,54 +10,25 @@
  * 		Neural A Amp modeler based on Seed pedal design by
  * 			Keith Bloemer (GuitarML) https://github.com/GuitarML/Seed
  *  
- * @version 1.3
- * @date 2024-03-20
+ * @version 1.4
+ * @date 2024-04-10
  * 
  * @copyright Copyright www.hexefx.com (c) 2024
- * ----------------------------------------------------------------------------
- * 	There are two hardware options:
- * 	1. My custom designed pedal using I2S2 and WM8731 codec (currently obsolete!)
- *  2. Generinc Teensy4.1 + Audio Adapter board. To enable this configuration 
- * 		uncomment the -DUSE_TEENSY_AUDIO_BOARD in the platformio.ini file	
- * 		This optin is enabled by default
- *  3. TGA Pro board by Black Addr Audio - using WM8731 codec on the default I2S bus
- * 
- * 	To build the project for one of the hardware options open the terminal in Platformio
- * 	and run:
- * 	1. For Teensy4.1 + Original Audio Adaptor board (SGTL5000, I2S1)
- * 			pio run -e teensy_audio_board
- * 	2. For HexeFX custom pedal using Teensy4.1 and WM8731 codec on I2S2
- * 			pio run -e hexefx_t41gfx
- *  3. For Blackaddr TGA Pro board
- * 			pio tun -e blackaddr_tgapro
- * 
- *  Alternatively, set the default build option on the top of the platformio.ini file:
- * 
- * 		[platformio]
- * 		default_envs = teensy_audio_board  ;set the build environment here
- * 
  */
 
 
 #include <Arduino.h>
 #include "audioComponents.h"
+#include "hardware_defs/hardware_defs.h"
 #include "stats.h"
 #include "reverbs.h"
 #include "midi_mapping.h"	
 #include "presetSystem.h"
 
 
-// analog bypass controls
-#define DRY_CTRL_PIN    28
-#define WET_CTRL_PIN    29
-#define CTRL_HI     	LOW
-#define CTRL_LO     	HIGH
-
-// Teensy Audio Adaptor and TGAPro use I2S
-#if defined(USE_TEENSY_AUDIO_BOARD) || defined(USE_BLACKADDR_TGAPRO)
-	AudioInputI2S_F32				i2s_in;
-// T41GFX uses I2S2
-#elif defined(USE_HEXEFX_T41GFX)
+#if defined(USE_I2S1)
+	AudioInputI2S_ext_F32			i2s_in;
+#elif defined(USE_I2S2)
 	AudioInputI2S2_F32				i2s_in;
 #endif
 	AudioSwitchSelectorStereo		inputSwitch;
@@ -70,26 +39,30 @@
 	AudioEffectRTNeural_F32			amp;
 	AudioFilterEqualizer3bandStereo_F32	toneStack;
 	AudioEffectNoiseGateStereo_F32	gate(InBufferL.dataPtr, InBufferR.dataPtr);
-	AudioEffectDelayStereo_F32		echo = AudioEffectDelayStereo_F32(1000, true); // 1 sec delay, buffer in PSRAM;
+	// for Teensy4.0 delay meminit will fail and default to 300ms in DRAM
+	AudioEffectDelayStereo_F32		echo = AudioEffectDelayStereo_F32(1500, true); // 1 sec delay, buffer in PSRAM;
 	AudioEffectSpringReverb_F32		reverbSP;
 	AudioEffectPlateReverb_F32		reverbPL;
-	AudioEffectReverbSc_F32			reverbSC = AudioEffectReverbSc_F32(true);
+	// ReverbSC set to use PSRAM will fail to init on Teensy4 and stick in bypass-PASS mode 
+	AudioEffectReverbSc_F32			reverbSC = AudioEffectReverbSc_F32(true);	
 	AudioEffectXfaderStereo_F32		xfader_FX;
 	AudioEffectXfaderStereo_F32		xfader_main;
-	AudioFilterBiquadStereo_F32		masterLowCut=AudioFilterBiquadStereo_F32(1); // 1 stage only
 	AudioFilterIRCabsim_F32			cabsim;
+	AudioFilterBiquadStereo_F32		masterLowCut=AudioFilterBiquadStereo_F32(1); // 1 stage only
+	
 	AudioEffectGainStereo_F32		masterVol;
-#if defined(USE_TEENSY_AUDIO_BOARD)
-	AudioOutputI2S_F32     			i2s_out;
-	AudioControlSGTL5000_F32		codec;
-#elif defined(USE_BLACKADDR_TGAPRO)
-	AudioOutputI2S_F32     			i2s_out;
-	AudioControlWM8731_F32			codec;
-#elif defined(USE_HEXEFX_T41GFX)
+#if defined(USE_I2S1)
+	AudioOutputI2S_ext_F32    		i2s_out; 
+#elif defined(USE_I2S2)
 	AudioOutputI2S2_F32     		i2s_out;
-	AudioControlWM8731_F32			codec;
 #endif
+ /**
+  * -----------------------------------------------------------------------------
+  * >>>>> Codec is delcared and defined in the hardware controller class <<<<<<<<
+  * -----------------------------------------------------------------------------
+  */
 
+// --------------------------------------------------------------
 AudioConnection_F32 	cable1(i2s_in, 0, inputSwitch, 0);
 AudioConnection_F32 	cable2(i2s_in, 1, inputSwitch, 1);
 AudioConnection_F32     cable10(inputSwitch, 0, InBufferL, 0); 
@@ -116,15 +89,18 @@ AudioConnection_F32		cable27(gate, 1, xfader_main, 1);
 AudioConnection_F32		cable28(echo, 0, xfader_FX, 0);
 AudioConnection_F32		cable29(echo, 1, xfader_FX, 1);
 
-AudioConnection_F32		cable30(reverbSP, 0, reverbPL, 0);	// spring reverb -> plate reverb
+AudioConnection_F32		cable30(reverbSP, 0, reverbPL, 0);
 AudioConnection_F32		cable31(reverbSP, 1, reverbPL, 1);
-AudioConnection_F32		cable32(reverbPL, 0, reverbSC, 0);	// plate reverb -> reverbSC
+
+AudioConnection_F32		cable32(reverbPL, 0, reverbSC, 0);
 AudioConnection_F32		cable33(reverbPL, 1, reverbSC, 1);
+
 AudioConnection_F32		cable34(reverbSC, 0, xfader_FX, 2);
 AudioConnection_F32		cable35(reverbSC, 1, xfader_FX, 3);
 
 AudioConnection_F32		cable36(xfader_FX, 0, xfader_main, 2);
 AudioConnection_F32		cable37(xfader_FX, 1, xfader_main, 3);
+
 AudioConnection_F32     cable40(xfader_main, 0, cabsim, 0);
 AudioConnection_F32     cable41(xfader_main, 1, cabsim, 1);
 
@@ -134,14 +110,14 @@ AudioConnection_F32     cable51(cabsim, 1, masterLowCut, 1);
 AudioConnection_F32     cable60(masterLowCut, 0, masterVol, 0);
 AudioConnection_F32     cable61(masterLowCut, 1, masterVol, 1);
 
-
-#ifdef USE_TEENSY_AUDIO_BOARD
+#ifdef USE_HEXEFX_T41GFX
+AudioConnection_F32     cable70(masterVol, 0, i2s_out, 1); // PCB error fix (channels swapped)
+AudioConnection_F32     cable71(masterVol, 1, i2s_out, 0);
+#else
 AudioConnection_F32     cable70(masterVol, 0, i2s_out, 0);
 AudioConnection_F32     cable71(masterVol, 1, i2s_out, 1);
-#else
-AudioConnection_F32     cable70(masterVol, 0, i2s_out, 1); // PCB error fix (channel swapped)
-AudioConnection_F32     cable71(masterVol, 1, i2s_out, 0);
 #endif
+// --------------------------------------------------------------
 // Callbacks for MIDI
 void cb_NoteOn(byte channel, byte note, byte velocity);
 void cb_ControlChange(byte channel, byte control, byte value);
@@ -153,26 +129,9 @@ void setup()
 	DBG_SERIAL.begin(115200);
 	AudioMemory_F32(26);
 	stats_init();
+	hw.init(); // will init the hardware depending on the configuration
+	masterVol.phase_inv(hw.phase_invert); // invert output phase if HW requires it
 
-#ifdef USE_TEENSY_AUDIO_BOARD
-	if (!codec.enable()) DBG_SERIAL.println("Codec init error!");
-	codec.set_bitDepth(AudioControlSGTL5000_F32::I2S_BITS_32);
-	codec.inputSelect(AUDIO_INPUT_LINEIN);
-	codec.volume(0.8f);
-	codec.lineInLevel(10, 10);
-	codec.adcHighPassFilterDisable();
-#else
-	#ifdef USE_HEXEFX_T41GFX
-		// analog IO setup - depends on used hardware
-		pinMode(DRY_CTRL_PIN, OUTPUT);
-		pinMode(WET_CTRL_PIN, OUTPUT);
-		digitalWriteFast(DRY_CTRL_PIN, CTRL_LO); 	// mute analog dry passthrough
-		digitalWriteFast(WET_CTRL_PIN, CTRL_HI);	// turn on wet signal
-	#endif
-    if (!codec.enable(AudioControlWM8731_F32::I2S_BITS_32)) DBG_SERIAL.println("Codec init error!");
-    codec.inputSelect(AudioControlWM8731_F32::INPUT_SELECT_LINEIN);
-    codec.inputLevel(0.77f);
-#endif
 	// set callbacks for USB MIDI
     usbMIDI.setHandleNoteOn(cb_NoteOn);
     usbMIDI.setHandleControlChange(cb_ControlChange);
@@ -186,6 +145,7 @@ void loop()
 	usbMIDI.read();
 	stats_process();
 	presetSystem_process();
+	hw.process();
 }
 // --------------------------------------------------------------
 /**
@@ -282,7 +242,7 @@ void cb_NoteOn(byte channel, byte note, byte velocity)
 		case MIDI_NOTEON_REVERBSC_SET:
 			reverbs_set(REVERB_SC, reverb_getBypass());
 			preset_updateFlag(PRESET_FLAG_REVBTYPE, (uint8_t)REVERB_SC);
-			break;
+			break;	
 		case MIDI_NOTEON_REVERBSP_SET:
 			reverbs_set(REVERB_SPRING, reverb_getBypass());
 			preset_updateFlag(PRESET_FLAG_REVBTYPE, (uint8_t)REVERB_SPRING);
@@ -354,14 +314,10 @@ void cb_NoteOn(byte channel, byte note, byte velocity)
 			break;
 		// --- HW control ---
 		case MIDI_NOTEON_CTRL_DRY:
-			#if defined(USE_HEXEFX_T41GFX)
-				digitalToggleFast(DRY_CTRL_PIN);
-			#endif
+			hw.dry_set(HW_STATE_TOGGLE);
 			break;
 		case MIDI_NOTEON_CTRL_WET:
-			#if defined(USE_HEXEFX_T41GFX)
-				digitalToggleFast(WET_CTRL_PIN);
-			#endif
+			hw.wet_set(HW_STATE_TOGGLE);
 			break;
 		case MIDI_NOTEON_MCU_RESET:
 			SCB_AIRCR = 0x05FA0004; // MCU reset
@@ -422,7 +378,7 @@ void cb_ControlChange(byte channel, byte control, byte value)
             break;
 		// ---- Booster ---
 		case MIDI_CC_BOOST_GAIN:
-			booster.drive(tmp*4.0f);
+			booster.drive_normalized(tmp);
 			preset_updateFXparam(PRESET_PARAM_BOOST_DRIVE, tmp);
 			break;
 		case MIDI_CC_BOOST_BOTTOM:
@@ -443,39 +399,32 @@ void cb_ControlChange(byte channel, byte control, byte value)
 			break;			
 		// --- Compressor ---
 		case MIDI_CC_COMP_PREGAIN:
-			tmp *= 4.0f;
-			compressor.setPreGain(tmp);
+			compressor.setPreGain_normalized(tmp);
 			preset_updateFXparam(PRESET_PARAM_COMP_PREGAIN, tmp);
 			break;
 		case MIDI_CC_COMP_THRES:
-			tmp = map(tmp, 0.0f, 1.0f, -40.0f, 0.0f);
-			compressor.setThresh_dBFS(tmp);
+			compressor.setThresh_normalized(tmp);
 			preset_updateFXparam(PRESET_PARAM_COMP_THRES, tmp);
 			break;
 		case MIDI_CC_COMP_RATIO:
-			tmp = 1.0f + tmp*9.0f; 
-			compressor.setCompressionRatio(tmp);
+			compressor.setCompressionRatio_normalized(tmp);
 			preset_updateFXparam(PRESET_PARAM_COMP_RATIO, tmp);
 			break;
 		case MIDI_CC_COMP_ATTACK:
-			tmp = map(tmp, 0.0f, 1.0f, 0.001f, 0.2f);
-			compressor.setAttack_sec(tmp);
+			compressor.setAttack_normalized(tmp);
 			preset_updateFXparam(PRESET_PARAM_COMP_ATTACK, tmp);
 			break;
 		case MIDI_CC_COMP_RELEASE:
-			tmp = map(tmp, 0.0f, 1.0f, 0.001f, 1.0f);
-			compressor.setRelease_sec(tmp);
+			compressor.setRelease_normalized(tmp);
 			preset_updateFXparam(PRESET_PARAM_COMP_RELEASE, tmp);
 			break;
 		case MIDI_CC_COMP_POSTGAIN:
-			tmp *= 4.0f;
-			compressor.setPostGain(tmp);
+			compressor.setPostGain_normalized(tmp);
 			preset_updateFXparam(PRESET_PARAM_COMP_POSTGAIN, tmp);
 			break;
 		// --- Amp ---
         case MIDI_CC_GATE_THRES:
-			tmp *= -100.0f;
-			gate.setThreshold(tmp);
+			gate.setThreshold_normalized(tmp);
 			preset_updateFXparam(PRESET_PARAM_AMP_GATE, tmp);
             break;
         case MIDI_CC_AMP_GAIN:

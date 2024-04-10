@@ -121,12 +121,16 @@ const preset_t presets_default[PRESET_MAX_NO] PROGMEM =
 				PARAM_DEFAULT_BOOST_MIX,			// 9.  boost mix
 				PARAM_DEFAULT_BOOST_LEVEL,			// 10. boost level
 				PARAM_DEFAULT_GATE_THRES,			// 11. gate threshold
-				PARAM_DEFAULT_AMP_GAIN,				// 12. amp gain
+				PARAM_DEFAULT_AMP_GAIN,								// 12. amp gain
 				PARAM_DEFAULT_AMP_BASS,				// 13. amp bass
 				PARAM_DEFAULT_AMP_MID,				// 14. amp mid
 				PARAM_DEFAULT_AMP_TREBLE,			// 15. amp treble
-				1.0f,								// 16. amp fx mix
+				0.6f,								// 16. amp fx mix
+#if ARDUINO_TEENSY40
+				0.375f,								// 17. delay time - T40 uses shorter delay time, compensate
+#else
 				0.05f,								// 17. delay time
+#endif
 				PARAM_DEFAULT_DELAY_INERTIA,		// 18. delay inertia
 				0.0f,								// 19. delay repeats
 				PARAM_DEFAULT_DELAY_MIX,			// 20. delay mix
@@ -191,7 +195,7 @@ const preset_t presets_default[PRESET_MAX_NO] PROGMEM =
 				PARAM_DEFAULT_COMP_ATTACK,			// 3.  compressor attack
 				PARAM_DEFAULT_COMP_RELEASE,			// 4.  compressor release
 				PARAM_DEFAULT_COMP_POSTGAIN,		// 5.  compressor post gain
-				0.24f*4.0f,							// 6.  boost drive
+				0.0f,								// 6.  boost drive
 				PARAM_DEFAULT_BOOST_BOTTOM,			// 7.  boost bottom
 				0.35f,								// 8.  boost presence
 				PARAM_DEFAULT_BOOST_MIX,			// 9.  boost mix
@@ -212,12 +216,12 @@ const preset_t presets_default[PRESET_MAX_NO] PROGMEM =
 				PARAM_DEFAULT_DELAY_BASS,			// 24. delay bass
 				PARAM_DEFAULT_DELAY_MODRATE,		// 25. delay mod rate
 				PARAM_DEFAULT_DELAY_MODDEPTH,		// 26. delay mod depth
-				PARAM_DEFAULT_REVERBPL_SIZE,		// 27. plate reverb size
+				0.5f,								// 27. plate reverb size
 				PARAM_DEFAULT_REVERBPL_DIFF,		// 28. plate reverb diffusion
 				PARAM_DEFAULT_REVERBPL_MIX,			// 29. plate reverb mix
 				PARAM_DEFAULT_REVERBPL_BASSCUT,		// 30. plate reverb bass cut
 				PARAM_DEFAULT_REVERBPL_TREBLECUT,	// 31. plate reverb treble cut
-				PARAM_DEFAULT_REVERBPL_TREBLE,		// 32. plate reverb treble
+				0.5f,								// 32. plate reverb treble
 				PARAM_DEFAULT_REVERBPL_BASS,		// 33. plate reverb bass
 				PARAM_DEFAULT_REVERBPL_BLEEDIN,		// 34. plate reverb freeze bleed in
 				PARAM_DEFAULT_REVERBPL_PITCH,		// 35. plate reverb pitch
@@ -267,7 +271,7 @@ const preset_t presets_default[PRESET_MAX_NO] PROGMEM =
 				PARAM_DEFAULT_COMP_ATTACK,			// 3.  compressor attack
 				PARAM_DEFAULT_COMP_RELEASE,			// 4.  compressor release
 				PARAM_DEFAULT_COMP_POSTGAIN,		// 5.  compressor post gain
-				0.27f*4.0f,							// 6.  boost drive
+				0.0f,								// 6.  boost drive
 				PARAM_DEFAULT_BOOST_BOTTOM,			// 7.  boost bottom
 				PARAM_DEFAULT_BOOST_PRESENCE,		// 8.  boost presence
 				PARAM_DEFAULT_BOOST_MIX,			// 9.  boost mix
@@ -277,8 +281,12 @@ const preset_t presets_default[PRESET_MAX_NO] PROGMEM =
 				PARAM_DEFAULT_AMP_BASS,				// 13. amp bass
 				PARAM_DEFAULT_AMP_MID,				// 14. amp mid
 				PARAM_DEFAULT_AMP_TREBLE,			// 15. amp treble
-				PARAM_DEFAULT_AMP_FXMIX,				// 16. amp fx mix
+				PARAM_DEFAULT_AMP_FXMIX,			// 16. amp fx mix
+#if ARDIONO_TEENSY40
 				0.54f,								// 17. delay time
+#else
+				1.0f,								// 17. delay time
+#endif				
 				PARAM_DEFAULT_DELAY_INERTIA,		// 18. delay inertia
 				0.15f,								// 19. delay repeats
 				PARAM_DEFAULT_DELAY_MIX,			// 20. delay mix
@@ -343,8 +351,8 @@ const preset_t presets_default[PRESET_MAX_NO] PROGMEM =
 				PARAM_DEFAULT_COMP_ATTACK,			// 3.  compressor attack
 				PARAM_DEFAULT_COMP_RELEASE,			// 4.  compressor release
 				PARAM_DEFAULT_COMP_POSTGAIN,		// 5.  compressor post gain
-				0.09f*4.0f,							// 6.  boost drive
-				0.65f,								// 7.  boost bottom
+				0.1f,								// 6.  boost drive
+				0.5f,								// 7.  boost bottom
 				0.76f,								// 8.  boost presence
 				PARAM_DEFAULT_BOOST_MIX,			// 9.  boost mix
 				PARAM_DEFAULT_BOOST_LEVEL,			// 10. boost level
@@ -420,7 +428,7 @@ const preset_t presets_default[PRESET_MAX_NO] PROGMEM =
 				PARAM_DEFAULT_COMP_ATTACK,			// 3.  compressor attack
 				PARAM_DEFAULT_COMP_RELEASE,			// 4.  compressor release
 				PARAM_DEFAULT_COMP_POSTGAIN,		// 5.  compressor post gain
-				0.2f*4.0f,							// 6.  boost drive
+				0.0f,								// 6.  boost drive
 				0.65f,								// 7.  boost bottom
 				0.75f,								// 8.  boost presence
 				PARAM_DEFAULT_BOOST_MIX,			// 9.  boost mix
@@ -430,10 +438,14 @@ const preset_t presets_default[PRESET_MAX_NO] PROGMEM =
 				PARAM_DEFAULT_AMP_BASS,				// 13. amp bass
 				PARAM_DEFAULT_AMP_MID,				// 14. amp mid
 				PARAM_DEFAULT_AMP_TREBLE,			// 15. amp treble
-				PARAM_DEFAULT_AMP_FXMIX,			// 16. amp fx mix
+				0.3f,								// 16. amp fx mix
+#if ARDIONO_TEENSY40
 				0.45f,								// 17. delay time
+#else
+				0.7f,								// 17. delay time
+#endif	
 				PARAM_DEFAULT_DELAY_INERTIA,		// 18. delay inertia
-				0.45f,								// 19. delay repeats
+				0.29f,								// 19. delay repeats
 				PARAM_DEFAULT_DELAY_MIX,			// 20. delay mix
 				0.34f,								// 21. delay hi cut
 				0.6f,								// 22. delay low cut
@@ -462,7 +474,7 @@ const preset_t presets_default[PRESET_MAX_NO] PROGMEM =
 				0.2f,								// 45. spring reverb treble cut
 				PARAM_DEFAULT_MASTER_VOLUME,		// 46. master volume
 				PARAM_DEFAULT_MASTER_PAN,			// 47. Master pan
-				0.35f,								// 47. delay volume
+				0.25f,								// 47.  delay/reverb mix
 				PARAM_DEFAULT_MASTER_LOWCUT			// 48. master lowCut filter
 		}
 	},
@@ -497,7 +509,7 @@ const preset_t presets_default[PRESET_MAX_NO] PROGMEM =
 				PARAM_DEFAULT_BOOST_MIX,			// 9.  boost mix
 				PARAM_DEFAULT_BOOST_LEVEL,			// 10. boost level
 				PARAM_DEFAULT_GATE_THRES,			// 11. gate threshold
-				PARAM_DEFAULT_AMP_GAIN,				// 12. amp gain
+				0.65f,								// 12. amp gain
 				PARAM_DEFAULT_AMP_BASS,				// 13. amp bass
 				PARAM_DEFAULT_AMP_MID,				// 14. amp mid
 				PARAM_DEFAULT_AMP_TREBLE,			// 15. amp treble
@@ -531,7 +543,7 @@ const preset_t presets_default[PRESET_MAX_NO] PROGMEM =
 				PARAM_DEFAULT_REVERBSP_MIX,			// 43. spring reverb mix
 				PARAM_DEFAULT_REVERBSP_BASSCUT,		// 44. spring reverb bass cut
 				PARAM_DEFAULT_REVERBSP_TREBLECUT,	// 45. spring reverb treble cut
-				PARAM_DEFAULT_MASTER_VOLUME,		// 46. master volume
+				0.48f,								// 46. master volume
 				PARAM_DEFAULT_MASTER_PAN,			// 47. Master pan
 				0.0f,								// 47. delay / reverb mix
 				PARAM_DEFAULT_MASTER_LOWCUT			// 48. master lowCut filter
@@ -564,7 +576,7 @@ const preset_t presets_default[PRESET_MAX_NO] PROGMEM =
 				PARAM_DEFAULT_COMP_ATTACK,			// 3.  compressor attack
 				PARAM_DEFAULT_COMP_RELEASE,			// 4.  compressor release
 				PARAM_DEFAULT_COMP_POSTGAIN,		// 5.  compressor post gain
-				1.0f*4.0f,								// 6.  boost drive
+				1.0f,								// 6.  boost drive
 				0.0f,								// 7.  boost bottom
 				0.5f,								// 8.  boost presence
 				0.4f,								// 9.  boost mix
