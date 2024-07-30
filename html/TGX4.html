@@ -28,7 +28,7 @@
 		Powered by <a href="https://github.com/benc-uk/touchmidi" target="_blank">TouchMIDI</a> and <a
 			href="https://github.com/rafaelaroca/web-serial-terminal" target="_blank">web-serial-terminal</a>. 
 			<strong>TGX4 - Teensy 4.1 Guitar Amp Project  </strong>
-			<a href="https://www.hexefx.com" target="_blank">www.hexefx.com</a> Version: 1.3
+			<a href="https://www.hexefx.com" target="_blank">www.hexefx.com</a> Version: 2.0
 	</div>
 	<div class="layout">
 		<!-- AMP TAB -->
@@ -52,6 +52,10 @@
 						<midi-encoder label="Level\n%p" chan="1" cc="25" colour="#DE728E" label-scale="0.8"></midi-encoder>
 						<midi-button  note="30" colour="#DE728E" label="Octave" label-scale="0.8"></midi-button>
 						<midi-button  note="27" colour="#DE728E" label="Boost" label-scale="0.8"></midi-button>
+
+						<midi-encoder label="WahFreq\n%p" chan="1" cc="11" colour="#72DEC2" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="WahMix\n%p" chan="1" cc="12" colour="#72DEC2" label-scale="0.8"></midi-encoder>
+						<midi-button  note="61" colour="#72DEC2" label="Wah" label-scale="0.8"></midi-button>
 					</group-row>
 					<group-row>
 						<p>Amp Model</p>
@@ -163,7 +167,7 @@
 						<midi-encoder label="Pitch\n%p" chan="1" cc="58" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
 						<midi-encoder label="PitchMix\n%p" chan="1" cc="59" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
 						<midi-encoder label="Shimmer\n%p" chan="1" cc="60" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
-						<midi-encoder label="PitchShim\n%v" chan="1" cc="61" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
+						<midi-encoder label="PitchShim\n%p" chan="1" cc="61" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
 						<midi-encoder label="Bass\n%p" chan="1" cc="55" colour="#FFF9C4" label-scale="0.8"></midi-encoder>
 						<!--<midi-spacer></midi-spacer>-->
 						<group-column>
@@ -181,21 +185,21 @@
 		<label class="nav" for="reverb">Reverb</label>
 	</div>
 	<div class="controls control-block">
-		<group-row>
-			<midi-button note="50" colour="#CAF0CA" label="Preset1" label-scale="0.5"></midi-button> <!-- Bypass -->
-			<midi-button note="51" colour="#CAF0CA" label="Preset 2" label-scale="0.5"></midi-button> <!-- Fender -->
-			<midi-button note="52" colour="#CAF0CA" label="Preset 3" label-scale="0.5"></midi-button>	<!-- HKcln -->
-			<midi-button note="53" colour="#CAF0CA" label="Preset 4" label-scale="0.5"></midi-button>	<!-- Matchless -->
-			<midi-button note="54" colour="#CAF0CA" label="Preset 5" label-scale="0.5"></midi-button> <!-- Bassman -->
-			<midi-button note="55" colour="#CAF0CA" label="Preset 6" label-scale="0.5"></midi-button>	<!-- Klon -->
-			<midi-button note="56" colour="#CAF0CA" label="Preset 7" label-scale="0.5"></midi-button>	<!-- 5150 -->
-			<midi-button note="57" colour="#CAF0CA" label="Preset 8" label-scale="0.5"></midi-button> <!-- MesaIIC -->
+		<group-row> <!-- Program Change - Preset Setting -->
+			<midi-button prog="0,0" value="0" colour="#CAF0CA" label="Preset1" label-scale="0.5"></midi-button> <!-- Bypass -->
+			<midi-button prog="0,0" value="1" colour="#CAF0CA" label="Preset 2" label-scale="0.5"></midi-button> <!-- Fender -->
+			<midi-button prog="0,0" value="2" colour="#CAF0CA" label="Preset 3" label-scale="0.5"></midi-button>	<!-- HKcln -->
+			<midi-button prog="0,0" value="3" colour="#CAF0CA" label="Preset 4" label-scale="0.5"></midi-button>	<!-- Matchless -->
+			<midi-button prog="0,0" value="4" colour="#CAF0CA" label="Preset 5" label-scale="0.5"></midi-button> <!-- Bassman -->
+			<midi-button prog="0,0" value="5" colour="#CAF0CA" label="Preset 6" label-scale="0.5"></midi-button>	<!-- Klon -->
+			<midi-button prog="0,0" value="6" colour="#CAF0CA" label="Preset 7" label-scale="0.5"></midi-button>	<!-- 5150 -->
+			<midi-button prog="0,0" value="7" colour="#CAF0CA" label="Preset 8" label-scale="0.5"></midi-button>	<!-- MesaIIC -->
 			<group-column>
 				<group-row>
 					<midi-button note="60" colour="#ff0000" label="Save"></midi-button>
-					<midi-button note="70" colour="#bdbf7c" label="Dry"></midi-button>
-					<midi-button note="71" colour="#bdbf7c" label="Wet"></midi-button>
-					<midi-button note="72" colour="#98DE72" label="Term"></midi-button>
+					<midi-button note="75" colour="#bdbf7c" label="Dry"></midi-button>
+					<midi-button note="76" colour="#bdbf7c" label="Byp"></midi-button>
+					<midi-button note="77" colour="#98DE72" label="Term"></midi-button>
 					<midi-button note="127" colour="#FF0000" label="RST"></midi-button>
 				</group-row>
 			</group-column>
