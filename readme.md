@@ -178,6 +178,9 @@ Switching the presets can be done in two ways:
 8. Distorted fuzzy stereo bass sound.  
 
 ## Demos  
+https://www.youtube.com/watch?v=2hztEZ9_kYk  
+[![Watch the video](https://img.youtube.com/vi/2hztEZ9_kYk/0.jpg)](https://youtu.be/2hztEZ9_kYk)  
+
 https://www.youtube.com/watch?v=AlLRwmOwigU  
 [![Watch the video](https://img.youtube.com/vi/AlLRwmOwigU/0.jpg)](https://youtu.be/AlLRwmOwigU)  
 
