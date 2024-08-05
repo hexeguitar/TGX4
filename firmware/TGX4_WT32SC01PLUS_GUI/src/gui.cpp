@@ -938,7 +938,7 @@ lv_obj_t* gui_make_slider(lv_obj_t* parent, lv_obj_t**slider, lv_obj_t **label_v
 
 	lv_obj_set_style_radius(*slider, 3, LV_PART_KNOB);
 	lv_obj_set_style_pad_hor(*slider, 8, LV_PART_KNOB);
-	lv_obj_set_ext_click_area(*slider, 8);
+	lv_obj_set_ext_click_area(*slider, 16);
 	return slider_cont;
 }
 // ---------------------------------------------------------------------------------
@@ -977,6 +977,7 @@ lv_obj_t* gui_make_btn(lv_obj_t* parent, const char* name, int32_t w, int32_t h,
 		lv_label_set_text_static(lbl, name);
 		lv_obj_center(lbl);
 	}
+	lv_obj_set_ext_click_area(btn, 8);
 	if (cb) lv_obj_add_event_cb(btn, cb, LV_EVENT_ALL, NULL);
 
 	return btn; 

@@ -6,7 +6,6 @@
 #include <LovyanGFX.hpp>
 #include <lvgl.h>
 
-
 class LGFX : public lgfx::LGFX_Device
 {
 	lgfx::Panel_ST7796 _panel_instance;
@@ -72,6 +71,7 @@ public:
 			cfg.i2c_addr = 0x38;
 			cfg.pin_sda = 6;
 			cfg.pin_scl = 5;
+			cfg.pin_int = 7;
 			cfg.freq = 400000;
 			cfg.x_min = 0;
 			cfg.x_max = 320;
@@ -85,8 +85,6 @@ public:
 	}
 };
 
-
 void display_init();
-
 
 #endif // _DISPLAY_H_

@@ -1,11 +1,9 @@
 #include "display.h"
 #include "debug_log.h"
 
+
 static LGFX tft;
 
-int screen_brightness = 255;
-
-/*Change to your screen resolution*/
 const uint32_t draw_buf_size = (DISPLAY_HOR_RES * DISPLAY_VER_RES / 10) * (LV_COLOR_DEPTH / 8);
 static uint8_t bufA[draw_buf_size];
 static uint8_t bufB[draw_buf_size];
@@ -15,13 +13,6 @@ static void touch_cb(lv_indev_t *indev, lv_indev_data_t *data);
 
 lv_disp_t *lcd;
 lv_indev_t *indev;
-
-static int colors[] = {TFT_RED, TFT_GREEN, TFT_BLUE, TFT_CYAN, TFT_MAGENTA, TFT_YELLOW};
-static int xoffset, yoffset, point_count;
-int getBaseColor(int x, int y)
-{
-	return ((x ^ y) & 3 || ((x - xoffset) & 31 && y & 31) ? TFT_BLACK : ((!y || x == xoffset) ? TFT_WHITE : TFT_DARKGREEN));
-}
 
 void display_init()
 {
@@ -44,7 +35,6 @@ void display_init()
 	lv_display_set_flush_cb(lcd, flush_cb);
 	lv_display_set_buffers(lcd, bufA, bufB, sizeof(bufA), LV_DISPLAY_RENDER_MODE_PARTIAL);
 	
-
 	indev = lv_indev_create();
 	lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
 	lv_indev_set_read_cb(indev, touch_cb);
@@ -61,18 +51,16 @@ static void flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
 
 	lv_display_flush_ready(disp);
 }
+
 static void touch_cb(lv_indev_t *indev, lv_indev_data_t *data)
 {
-
 	uint16_t x, y, count;
+
 	if (count = tft.getTouch(&x, &y))
 	{
 		data->state = LV_INDEV_STATE_PR;
 		data->point.x = x;
 		data->point.y = y;
 	}
-	else
-	{
-		data->state = LV_INDEV_STATE_REL;
-	}
+	else	data->state = LV_INDEV_STATE_REL;
 }
