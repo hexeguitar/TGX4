@@ -134,12 +134,6 @@ void setup()
 	
 	masterVol.phase_inv(hw.phase_invert); // invert output phase if HW requires it
 	masterLowCut.setLowShelf(0, 20.0f, -15.0f, 1.0f);
-	// software fixes for hardware issues:
-	#if defined(USE_HEXEFX_T41GFX)
-		i2s_out.set_channel_swap(false);
-	#elif defined(USE_HEXEFX_TGX4_REV1)
-		i2s_in.set_channel_swap(true);	// input channels swapped.
-	#endif
 
 	// set callbacks for USB MIDI
 	usbMIDI.setHandleProgramChange(cb_ProgramChange);
