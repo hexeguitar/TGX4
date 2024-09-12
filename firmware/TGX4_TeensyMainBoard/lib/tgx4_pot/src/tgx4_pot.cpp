@@ -27,8 +27,7 @@
 
 void tgx4Pot::begin(uint8_t AinPin, const char *potLabel, bool sleepEnable, float snapMultiplier, tgx4Pot_taper_t pot_taper, uint8_t aver, uint8_t pos, const uint16_t *thresTable)
 {
-    pinMode(pin, INPUT);    // ensure button pin is an input
-    digitalWrite(pin, LOW); // ensure pullup is off on button pin
+
     switchPositions = pos;
     switchThresTable = thresTable;
     potChange_callback = NULL;
@@ -39,6 +38,7 @@ void tgx4Pot::begin(uint8_t AinPin, const char *potLabel, bool sleepEnable, floa
     taper = pot_taper;
     averaging = aver;
     setSnapMultiplier(snapMultiplier);
+	pinMode(pin, INPUT_DISABLE);
 }
 
 void tgx4Pot::update(void)
