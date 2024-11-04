@@ -1,17 +1,17 @@
 #include <EEPROM.h>
 #include "reverbs.h"
 #include "audioComponents.h"
-//#include "midi.h"
 #include "console.h"
+
 
 #define REVEB_MAX_IDX		(2u)		// max number of reverbs
 #define REVERB_PITCH_TABLE_SIZE	(9u)
 #define REVERB_PITCH_TABLE_SIZE_F ((float32_t)REVERB_PITCH_TABLE_SIZE + 0.497f)
 
 #if defined (REVERBS_USE_TRAILS)
-	#define BP_MODE (2)
+	#define BP_MODE BYPASS_MODE_TRAILS
 #else
-	#define BP_MODE (1)
+	#define BP_MODE BYPASS_MODE_OFF
 #endif
 
 extern AudioEffectReverbSc_F32			reverbSC;
@@ -26,11 +26,10 @@ static const char* PROGMEM reverb_names[3] =
 active_reverb_e activeReverbIdx = REVERB_SPRING;
 
 float32_t master_vol = 1.0f;
-const float32_t masterVolMult = 2.5f;
 float32_t mix = 1.0f;
 bool freeze_mode = false;
 bool reverb_bypass = true;
-uint8_t bypassMode = BP_MODE;
+bypass_mode_t bypassMode = BP_MODE;
 extern uint8_t external_psram_size;
 
 const char* reverbs_getName()
@@ -42,17 +41,16 @@ active_reverb_e reverbs_set(active_reverb_e model, bool bypass)
 {
 	if (model <= REVEB_MAX_IDX)
 	{
-		
 		reverb_bypass = bypass;
 		reverb_setFreeze(false);
 		switch (model)
 		{
 			case REVERB_PLATE:
-				reverbSC.bypass_setMode(AudioEffectReverbSc_F32::BYPASS_MODE_PASS);
+				reverbSC.bypass_setMode(BYPASS_MODE_PASS);
 				reverbSC.bypass_set(true);
-				reverbSP.bypass_setMode(AudioEffectSpringReverb_F32::BYPASS_MODE_PASS);
+				reverbSP.bypass_setMode(BYPASS_MODE_PASS);
 				reverbSP.bypass_set(true);
-				reverbPL.bypass_setMode((AudioEffectPlateReverb_F32::bypass_mode_t)bypassMode);
+				reverbPL.bypass_setMode(bypassMode);
 				reverbPL.bypass_set(bypass);
 				activeReverbIdx = (active_reverb_e) model;
 				break;
@@ -60,11 +58,11 @@ active_reverb_e reverbs_set(active_reverb_e model, bool bypass)
 		#if ARDUINO_TEENSY41
 				if (external_psram_size > 0)
 				{
-					reverbPL.bypass_setMode(AudioEffectPlateReverb_F32::BYPASS_MODE_PASS);
+					reverbPL.bypass_setMode(BYPASS_MODE_PASS);
 					reverbPL.bypass_set(true);
-					reverbSP.bypass_setMode(AudioEffectSpringReverb_F32::BYPASS_MODE_PASS);
+					reverbSP.bypass_setMode(BYPASS_MODE_PASS);
 					reverbSP.bypass_set(true);
-					reverbSC.bypass_setMode((AudioEffectReverbSc_F32::bypass_mode_t)bypassMode);
+					reverbSC.bypass_setMode(bypassMode);
 					reverbSC.bypass_set(bypass);
 					activeReverbIdx = (active_reverb_e) model;
 				}
@@ -80,11 +78,11 @@ active_reverb_e reverbs_set(active_reverb_e model, bool bypass)
 		#endif	
 				break;
 			case REVERB_SPRING:
-				reverbPL.bypass_setMode(AudioEffectPlateReverb_F32::BYPASS_MODE_PASS);
+				reverbPL.bypass_setMode(BYPASS_MODE_PASS);
 				reverbPL.bypass_set(true);
-				reverbSC.bypass_setMode(AudioEffectReverbSc_F32::BYPASS_MODE_PASS);
+				reverbSC.bypass_setMode(BYPASS_MODE_PASS);
 				reverbSC.bypass_set(true);
-				reverbSP.bypass_setMode((AudioEffectSpringReverb_F32::bypass_mode_t)bypassMode);
+				reverbSP.bypass_setMode(bypassMode);
 				reverbSP.bypass_set(bypass);
 				activeReverbIdx = (active_reverb_e) model;
 				break;

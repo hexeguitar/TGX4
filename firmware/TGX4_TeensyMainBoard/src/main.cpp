@@ -22,6 +22,7 @@
 
 #include <Arduino.h>
 #include "debug_log.h"
+#include "system.h"
 #include "audioComponents.h"
 #include "presetSystem.h"
 #include "hardware_defs/hardware_defs.h"
@@ -126,10 +127,11 @@ AudioConnection_F32     cable95(masterVol, 1, i2s_out, 1);
 // --------------------------------------------------------------
 void setup()
 {
+	update_psram_speed(132); // set the PSRAM speed to 132MHz
 	DBG_SERIAL.begin(115200);
 	AudioMemory_F32(26);
 	console_init();
-
+	
 	hw.init(); // will init the hardware depending on the configuration
 	
 	masterVol.phase_inv(hw.phase_invert); // invert output phase if HW requires it
@@ -141,11 +143,10 @@ void setup()
 	usbMIDI.setHandleControlChange(cb_ControlChange);
 	usbMIDI.setHandleClock(cb_MidiClock);
 
-	
 	presetSystem.setFlagCallback(PRESET_FLAG_BYPASS, [](uint8_t value)
 						{ hw.state_set((hw_state_t)!value); presetSystem.resetPreload();});	
 	presetSystem.setFlagCallback(PRESET_FLAG_INSELECT, [](uint8_t value)
-						{ inputSwitch.setMode((AudioSwitchSelectorStereo::selector_mode_t)value); });
+						{ inputSwitch.setMode((AudioSwitchSelectorStereo::selector_mode_t)value);});
 	presetSystem.setFlagCallback(PRESET_FLAG_COMP_EN, [](uint8_t value)
 						{ compressor.bypass_set(value ? false : true); });
 	presetSystem.setFlagCallback(PRESET_FLAG_WAH_EN, [](uint8_t value)
@@ -293,6 +294,7 @@ void setup()
 						{ masterLowCut.makeupGain(1.0f + value*0.5f);
 						  masterLowCut.setLowShelf(0, MASTER_LOWCUT_FMIN +\
 						   value*MASTER_LOWCUT_FMAX, -15.0f, 1.0f); });
+	delay(300);				// add a bit of delay before initializine the SD card. Some pedalboard power supplies slowly ramnp up the voltage.
 	presetSystem.init(); // loads the last used preset - needs the callbacks defined, hence placed here
 	
 	gui.init();	// init gui after the preset has been loaded

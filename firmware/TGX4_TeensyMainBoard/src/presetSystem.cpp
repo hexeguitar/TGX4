@@ -73,7 +73,7 @@ FLASHMEM void PresetSystem::load(int16_t presetNo)
 	}
 	if (!SDcard_ready)
 	{
-		if (presetNo < (int16_t)PRESET_MAX_NO_EEP)	currentPresetIdx = load_EEP(presetNo);
+		if (presetNo <= (int16_t)PRESET_MAX_NO_EEP)	currentPresetIdx = load_EEP(presetNo);
 		else 
 		{
 			const char msg[] = "NO SD card detected, loading Preset 1";
