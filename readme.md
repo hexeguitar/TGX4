@@ -1,10 +1,11 @@
 ## TGX4 - Teensy Guitar Amp Project
-![Control interface](img/tgx4_top_s.jpg)  
+![Control interface](img/tgx4_top_pnl.jpg)  
 
 This project aims at creating a nice usable set of guitar and bass tones while using relatively inexpensive hardware and being simple to build.  
 It combines a Neural Network amp modeler with stereo IR cabinet emulation, versatile stereo Ping-Pong delay and 3 different reverbs. There is also a Compressor, Wah and Booster with octave up mode for further input tone shaping.  
 
 ### Change-log  
+V2.1 - 12-2024 - Added Front Panel, bug fixes  
 V2.0 - 07-2024 - Dedicated hardware platform  
 V1.4 - 04.2024 - Multiple hardware platforms added  
 V1.3 - 03.2024 - Initial release.  
@@ -14,7 +15,7 @@ V1.3 - 03.2024 - Initial release.
 In general all the parameters are controlled via MIDI. There is a lot of controls and to make the hardware less expensive and easier to build the starting point is a simple html page using WebMIDI + WebSerial, which, opened in one of the supported browsers (Chrome, Opera, Edge) offers a full GUI interface.  
 Teensy is using the USB Serial port to show the status and other info about the current state.  
 Usage:  
-1. Plug the Teensy with uploaded firmare into the USB port.
+1. Plug the Teensy with uploaded firmware into the USB port.
 2. Open the TGX4.htm page (html folder) in any of the supported browsers.
 3. Choose Teensy MIDI for the MIDI interface.
 4. Click _Connect_ and choose the Teensy Serial port.
@@ -38,7 +39,7 @@ The signal flow, except three components is stereo. The three mono components ar
 	* L+R - stereo input
 	* L+L - left mono input
 	* R+R - right mono input
-2. **Compressor** - stereo dynamic compressor with wide varierty of controls:  
+2. **Compressor** - stereo dynamic compressor with wide variety of controls:  
 	* Pregain - input gain  
 	* Threshold  
 	* Ratio  
@@ -78,8 +79,8 @@ One of the time based effects, versatile 1 second delay with modulation and Free
    * Repeats - amount of feedback  
    * HiCut - low pass filter inside the delay path, controls the treble loss for each repeat. Many delays implement such feature and claim to make the sound "analog"  
    * LowCut - high pass filer inside the delay path, controls the bass loss for each repeat  
-   * Treble - overal treble control to make the sound darker
-   * Bass - output bass control for futher delay tone shaping  
+   * Treble - overall treble control to make the sound darker
+   * Bass - output bass control for further delay tone shaping  
    * ModRate - modulation rate (internal LFO speed)
    * ModDepth - modulation depth (internal LFO depth)
    * Tap Tempo  
@@ -92,7 +93,7 @@ There are 3 types of reverb built in, **only one can be active** at a time:
 1. **Plate Reverb** - versatile lush sounding long reverb:  
 	* Size - reverb time  
 	* Diffusion - lower values create more echo effects inside the reverb tail  
-	* Treble Cut - treble loss in the reverb tail, afffects the reverb time  
+	* Treble Cut - treble loss in the reverb tail, affects the reverb time  
 	* Bass Cut - bass loss in the reverb tail, affects the reverb time  
 	* Treble - output treble control for the reverb wet signal  
 	* Bass - output bass controls fot the reverb wet signal  
@@ -117,7 +118,7 @@ Press **Plate**, **Spring** or **ReverbSC** button to activate the reverb.
 
 ## Hardware  
 In the simplest form, this project can run on a Teensy 4.0 or T.4 and the audio adapter board.  
-Adding PSRAM to the Teensy4.1 opens up the full set of features. Lack of PSRAM resutlts in:  
+Adding PSRAM to the Teensy4.1 opens up the full set of features. Lack of PSRAM results in:  
 - ReverbSC disabled,
 - Delay has a shorter time range.  
   

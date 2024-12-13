@@ -51,6 +51,10 @@ Top layer are mainly through-hole components, except the USB-C connector for the
 #### 2. Making the enclosure  
 See [>>>> here <<<<](enclosure.md).  
 
+### Front Panel  
+Front panel as KicaD PCB project, including gerbers is available in the `KiCad_proj/FrontPanel` folder.  
+![alt text][img_6]   
+
 ### Display  
 The ESP32S3 + Touch display board used in this project is the WT32SC01Plus. There are many variants of the ESP32+display boards floating around, here are the specs of the used one:  
 ![Control interface](../img/wt32sc01plus.jpg)  
@@ -70,3 +74,6 @@ www.hexefx.com
 [img_pcb4]: img/TGX4_pcb3.jpg "PCB"
 
 [img_5]: img/tgx4_assembly1.jpg "Display assembly"
+
+[img_6]: img/tgx4_frontPanel.jpg "Front Panel"
+
