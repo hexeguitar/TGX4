@@ -3,6 +3,6 @@
 
 #include <Arduino.h>
 
-void update_psram_speed(int speed_mhz);
+bool update_psram_speed(int speed_mhz);
 
 #endif // _SYSTEM_H_

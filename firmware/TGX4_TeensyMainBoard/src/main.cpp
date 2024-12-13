@@ -46,7 +46,7 @@ AudioEffectGuitarBooster_F32	booster;
 AudioEffectRTNeural_F32			amp;
 AudioFilterEqualizer3bandStereo_F32	toneStack;
 AudioEffectNoiseGateStereo_F32	gate(InBufferL.dataPtr, InBufferR.dataPtr);
-// for Teensy4.0 delay meminit will fail and default to 300ms in DRAM
+// for Teensy4.0 delay meminit will fail and default to 200ms in DRAM
 AudioEffectDelayStereo_F32		echo = AudioEffectDelayStereo_F32(1500, true); // 1 sec delay, buffer in PSRAM;
 AudioEffectSpringReverb_F32		reverbSP;
 AudioEffectPlateReverb_F32		reverbPL;
@@ -131,12 +131,28 @@ void setup()
 	DBG_SERIAL.begin(115200);
 	AudioMemory_F32(26);
 	console_init();
+
+	#if defined(ARDUINO_TEENSY41) || defined (USE_T40_SDIO_ADAPTER)
+		if (!SD.begin(BUILTIN_SDCARD))
+	#else 
+		if (!SD.begin(10)) // standard SPI SD card used on the Teensy Audio Adaptor board
+	#endif
+		{
+			DBG_println("Failed to initialize the SD card!\r\nUsing EEPROM only!"); 
+		}
+		else 
+		{
+			DBG_println("SD card initialized."); 
+		}
 	
 	hw.init(); // will init the hardware depending on the configuration
 	
 	masterVol.phase_inv(hw.phase_invert); // invert output phase if HW requires it
 	masterLowCut.setLowShelf(0, 20.0f, -15.0f, 1.0f);
-
+	// software fixes for hardware issues:
+	#if defined(USE_HEXEFX_T41GFX)
+		i2s_out.set_channel_swap(false);
+	#endif
 	// set callbacks for USB MIDI
 	usbMIDI.setHandleProgramChange(cb_ProgramChange);
 	usbMIDI.setHandleNoteOn(cb_NoteOn);
@@ -294,7 +310,7 @@ void setup()
 						{ masterLowCut.makeupGain(1.0f + value*0.5f);
 						  masterLowCut.setLowShelf(0, MASTER_LOWCUT_FMIN +\
 						   value*MASTER_LOWCUT_FMAX, -15.0f, 1.0f); });
-	delay(300);				// add a bit of delay before initializine the SD card. Some pedalboard power supplies slowly ramnp up the voltage.
+	delay(300);				// add a bit of delay before initializine the SD card. Some pedalboard power supplies slowly ramp up the voltage.
 	presetSystem.init(); // loads the last used preset - needs the callbacks defined, hence placed here
 	
 	gui.init();	// init gui after the preset has been loaded
@@ -302,6 +318,11 @@ void setup()
 // --------------------------------------------------------------
 void loop()
 {
+	 if (CrashReport)
+	{
+		Serial.print(CrashReport);
+		delay(3000);
+	}
 	usbMIDI.read();
 	console_process();
 	presetSystem.process();
