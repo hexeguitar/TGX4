@@ -12,7 +12,7 @@
 #define _HW_HEXEFX_T41GFX_H_
 
 #include <Wire.h>
-#include "hexefx_audio_F32.h"
+#include "hexefx_audiolib_F32.h"
 #include "hw_proto.h"
 
 class hw_hexefx_t41GFX : public hw_TGX4_prototype

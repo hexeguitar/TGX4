@@ -2,7 +2,7 @@
 #define _HW_BLACKADDR_TGAPRO_H_
 
 #include <Wire.h>
-#include "hexefx_audio_F32.h"
+#include "hexefx_audiolib_F32.h"
 #include "hw_proto.h"
 #include "tgx4_led.h"
 #include "tgx4_pot.h"

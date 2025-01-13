@@ -2,7 +2,7 @@
 #define _HW_TEMPLATE_H_
 
 #include <Wire.h>
-#include "hexefx_audio_F32.h"
+#include "hexefx_audiolib_F32.h"
 #include "hw_proto.h"
 //#include "yourCodecDriver.h" - if it's not the part of the library
 

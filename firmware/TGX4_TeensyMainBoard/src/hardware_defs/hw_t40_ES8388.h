@@ -2,7 +2,7 @@
 #define _HW_T40_ES8388_H_
 
 #include <Wire.h>
-#include "hexefx_audio_F32.h"
+#include "hexefx_audiolib_F32.h"
 #include "hw_proto.h"
 
 /* Teensy 4.0 + ES8388 on I2S1, config via I2C (Wire)

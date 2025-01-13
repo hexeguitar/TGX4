@@ -1,8 +1,10 @@
 ## TGX4 - Teensy Guitar Amp Project
-![Control interface](img/tgx4_top_pnl.jpg)  
+![Top View](img/tgx4_top_pnl.jpg)  
 
 This project aims at creating a nice usable set of guitar and bass tones while using relatively inexpensive hardware and being simple to build.  
 It combines a Neural Network amp modeler with stereo IR cabinet emulation, versatile stereo Ping-Pong delay and 3 different reverbs. There is also a Compressor, Wah and Booster with octave up mode for further input tone shaping.  
+
+![Side View](img/tgx4_side.jpg)  
 
 ### Change-log  
 V2.1 - 12-2024 - Added Front Panel, bug fixes  
@@ -22,13 +24,13 @@ Usage:
 5. Press _Term_ button to switch between the status report and the CLI.
 6. Use dials and buttons to control the effects.  
 
-![Control interface](img/TGX4_AmpControls.png)  
+![Ampinterface](img/TGX4_AmpControls.png)  
 
 #### Touchscreen GUI  
 A separate project is provided for the **WT32SC01Plus board** (ESP32-S3 + 3.5" 480x320 IPS display, capacitive touchscreen) which is the main and dedicated user interface allowing access to all controls and functions of the pedal.  
 The GUI is created using LVGL9 library:    
 
-![Control interface](img/tgx4_setup1.jpg)  
+![Setup](img/tgx4_setup1.jpg)  
 ### Internal structure 
 
 ![Internal structure](img/TGX4_blockSchem.png)  

@@ -2,7 +2,7 @@
 #define _AUDIOCOMPONENTS_H_
 
 #include "OpenAudio_ArduinoLibrary.h"
-#include "hexefx_audio_F32.h"
+#include "hexefx_audiolib_F32.h"
 #include "RTNeural_F32.h"
 // output highpass filter settings
 #define MASTER_LOWCUT_FMIN	(20.0f)
