@@ -231,6 +231,9 @@ public:
 		}
 	}
 
+	// returns the value of the flag that a footswitch is assigned to
+	uint8_t getFootswAssignFlagValue(uint8_t assignValue);
+
 	inline uint32_t getFlagsChangeMask() { return flagChangeMask;}
 	inline uint64_t getParamsChangeMask() { return paramChangeMask;	}
 

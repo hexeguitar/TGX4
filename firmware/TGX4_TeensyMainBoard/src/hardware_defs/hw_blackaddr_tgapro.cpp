@@ -62,10 +62,25 @@ FLASHMEM bool hw_Blackaddr_TGAPro::process(void)
 	return false;
 }	
 
-
-
-
-
+FLASHMEM void hw_Blackaddr_TGAPro::led_set(uint8_t ledNo, hw_state_t state)
+{
+	tgx4Led* ledPtr = NULL;
+	switch(ledNo)
+	{
+		case 0: ledPtr = &led1; break;
+		case 1: ledPtr = &led2; break;
+		default: ledPtr = NULL; break;
+	}
+	if (ledPtr)
+	{
+		switch(state)
+		{
+			case HW_STATE_OFF:	ledPtr->set(false); break;
+			case HW_STATE_ON:	ledPtr->set(true); break;
+			case HW_STATE_TOGGLE:  ledPtr->toggle(); break;
+		}
+	}
+}
 
 
 void hw_Blackaddr_TGAPro::swPressHandler(uint8_t assign, uint8_t swNo)

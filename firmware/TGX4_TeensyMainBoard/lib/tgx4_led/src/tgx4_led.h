@@ -34,6 +34,12 @@ public:
 		if (s) 	{ state =  LED_STATE_ON; digitalWriteFast(pin, HIGH^ctrl_inv);}
 		else 	{ state =  LED_STATE_OFF; digitalWriteFast(pin, LOW^ctrl_inv);}
 	}
+	void toggle()
+	{
+		if (state == LED_STATE_BLINK) return;
+		state = state == LED_STATE_ON ? LED_STATE_OFF : LED_STATE_ON;
+		digitalToggleFast(pin);
+	}
 	void pulse(uint16_t period_ms, uint8_t count)
 	{
 		blink_period_ms = period_ms;

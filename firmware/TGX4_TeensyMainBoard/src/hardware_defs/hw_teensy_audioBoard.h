@@ -62,6 +62,9 @@ public:
 		}
 		return true;
 	}
+
+	void led_set(uint8_t ledNo, hw_state_t state) {};
+	
 	// In case the output signal phase has to be inverted due to 
 	// ie. inverting mixer or DAC filter set it here to true  
 	bool phase_invert = false;	

@@ -395,6 +395,41 @@ FLASHMEM void PresetSystem::loadCurrent()
 	}
 	AudioInterrupts();
 }
+// --------------------------------------------------------------
+/**
+ * @brief returns the value of the flag that the footswitch is assigned to
+ * 
+ * @param assignValue footswitch assign value
+ * @return flag value
+ */
+FLASHMEM uint8_t PresetSystem::getFootswAssignFlagValue(uint8_t assignValue)
+{
+	uint8_t result = 0;
+	switch(assignValue)
+	{
+		case PRESET_FTASSIGN_COMP:
+			result = getFlag(PRESET_FLAG_COMP_EN);
+			break;
+		case PRESET_FTASSIGN_WAH:
+			result = getFlag(PRESET_FLAG_WAH_EN);
+			break;
+		case PRESET_FTASSIGN_BOOST:
+			result = getFlag(PRESET_FLAG_BOOST_EN);
+			break;
+		case PRESET_FTASSIGN_OCT:
+			result = getFlag(PRESET_FLAG_OCTAVE_EN);
+			break;
+		case PRESET_FTASSIGN_DELAY:
+			result = getFlag(PRESET_FLAG_DELAY_EN);
+			break;
+		case PRESET_FTASSIGN_REVERB:
+			result = getFlag(PRESET_FLAG_REVB_EN);
+			break;
+		default: break;
+	}
+	return result;
+}
+
 
 // --------------------------------------------------------------
 /**

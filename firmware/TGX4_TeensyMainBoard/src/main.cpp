@@ -197,10 +197,10 @@ void setup()
 	// 					{ return; }); //TODO:
 	// presetSystem.setFlagCallback(PRESET_FLAG_EXP_ASSIGN, [](uint8_t value)
 	// 					{ return; }); //TODO:
-	// presetSystem.setFlagCallback(PRESET_FLAG_FT1_ASSIGN, [](uint8_t value)
-	// 					{ return; }); //TODO:
-	// presetSystem.setFlagCallback(PRESET_FLAG_FT2_ASSIGN, [](uint8_t value)
-	// 					{ return; }); //TODO:
+	presetSystem.setFlagCallback(PRESET_FLAG_FT1_ASSIGN, [](uint8_t value)
+	 					{  hw.led_set(1, presetSystem.getFootswAssignFlagValue(value) ? HW_STATE_ON : HW_STATE_OFF); });
+	presetSystem.setFlagCallback(PRESET_FLAG_FT2_ASSIGN, [](uint8_t value)
+	 					{  hw.led_set(2, presetSystem.getFootswAssignFlagValue(value) ? HW_STATE_ON : HW_STATE_OFF); });
 	presetSystem.setFlagCallback(PRESET_FLAG_DRYSIG, [](uint8_t value)
 						{ hw.dry_set((hw_state_t)value); });
 	// param change callbacks

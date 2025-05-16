@@ -89,6 +89,8 @@ public:
 
 	bool process(void);
 
+	void led_set(uint8_t ledNo, hw_state_t state);
+
 	bool phase_invert = false; // Output phase invert setting
 private:
 

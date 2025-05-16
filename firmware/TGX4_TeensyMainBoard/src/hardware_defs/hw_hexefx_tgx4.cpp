@@ -203,3 +203,24 @@ void hw_hexefx_TGX4::footswHoldHandler(uint8_t assign, uint8_t ftNo)
 			break;
 	}
 }
+
+FLASHMEM void hw_hexefx_TGX4::led_set(uint8_t ledNo, hw_state_t state)
+{
+	tgx4Led* ledPtr;
+	switch(ledNo)
+	{
+		case 0: ledPtr = &ledL; break;
+		case 1: ledPtr = &ledM; break;
+		case 2: ledPtr = &ledR; break;
+		default: ledPtr = NULL; break;
+	}
+	if (ledPtr)
+	{
+		switch(state)
+		{
+			case HW_STATE_OFF:	ledPtr->set(false); break;
+			case HW_STATE_ON:	ledPtr->set(true); break;
+			case HW_STATE_TOGGLE:  ledPtr->toggle(); break;
+		}
+	}
+}

@@ -23,6 +23,7 @@ public:
 	virtual bool wet_get(void) = 0;
 	virtual bool state_set(hw_state_t state) = 0;
 	virtual bool state_get(void) = 0;
+	virtual void led_set(uint8_t ledNo, hw_state_t state) = 0;
 	bool phase_invert = false; 					// Output phase invert setting
 private:
 	
