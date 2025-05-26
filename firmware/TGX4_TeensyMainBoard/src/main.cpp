@@ -226,6 +226,8 @@ void setup()
 						{ booster.bottom(value); });
 	presetSystem.setParamCallback(PRESET_PARAM_BOOST_PRESENCE, [](float32_t value)
 						{ booster.tone(value); });
+	presetSystem.setParamCallback(PRESET_PARAM_BOOST_LEVEL, [](float32_t value)
+						{ booster.volume(value); });						
 	presetSystem.setParamCallback(PRESET_PARAM_BOOST_MIX, [](float32_t value)
 						{ booster.mix(value); });
 	presetSystem.setParamCallback(PRESET_PARAM_AMP_GATE, [](float32_t value)
